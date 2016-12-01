@@ -21,6 +21,7 @@ class TestIKMeans(unittest.TestCase):
         verify_data = TestIKMeans.verify_folder + test
         tdata = np.loadtxt(test_data)
         vdata = np.loadtxt(verify_data)
+        # np.random.shuffle(tdata)
         start = time()
         output = ik_means(tdata)
         end = time()
