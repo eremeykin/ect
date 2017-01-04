@@ -23,7 +23,7 @@ class TestIKMeans(unittest.TestCase):
         vdata = np.loadtxt(verify_data)
         # np.random.shuffle(tdata)
         start = time()
-        output = ik_means(tdata)
+        output,c = ik_means(tdata)
         end = time()
         assert np.array_equal(output, vdata)
         print(test + ' N=' + '{:5d}'.format(len(tdata)) + ' finished in ' + '{:0.4f}'.format(end - start) + ' sec.')

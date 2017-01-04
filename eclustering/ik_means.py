@@ -2,45 +2,40 @@ __author__ = 'eremeykin'
 import numpy as np
 from scipy.spatial import distance as d
 import matplotlib.pyplot as plt
-from cluster import Cluster
 
 def ik_means(data, theta=1):
     data = np.copy(data)
     indices = np.arange(len(data))
-    cy = np.mean(data, 0)
-    dist_to = lambda y: lambda x: d.sqeuclidean(x, y)
-    x_cy = np.apply_along_axis(dist_to(cy), 1, data)
-    clustres = []
-    labels = np.full(len(data), 0, dtype=int)
-    c = 1
+    labels = np.zeros(len(data), dtype=int)
+    centroids = []
+
+    origin = np.mean(data, 0)
+
+    def dist_to(y):
+        return lambda x: d.sqeuclidean(x, y)
+
+    x_origin = np.apply_along_axis(dist_to(origin), 1, data)
+    cluster_label = 1
     while len(data) > 1:
-        cti = np.argmax(x_cy)
-        ct = data[cti]
+        ct_i = np.argmax(x_origin)
+        ct = data[ct_i]
         ct_old = None
         anomaly = np.full(len(data), False, dtype=bool)
-        anomaly[cti] = True
+        anomaly[ct_i] = True
         while not np.array_equal(ct_old, ct):
-            # plt.clf()
-            # plt.scatter(data[:, 0], data[:, 1])
-            # plt.scatter(ct[0], ct[1], marker='*', s=200, color='yellow')
-            # plt.scatter(cy[0], cy[1], marker='*', s=200, color='blue')
-            # plt.xlim(-10, 20)
-            # plt.ylim(-5, 25)
-            # plt.pause(0.1)
             ct_old = np.copy(ct)
             x_ct = np.apply_along_axis(dist_to(ct), 1, data)
-            anomaly = x_ct < x_cy
-            ct = np.mean(data[np.where(anomaly)], 0)
-        clustres.append(Cluster(indices[np.where(anomaly)], ct))
-            # {"cluster": indices[np.where(anomaly)], "centroid": ct})
-        normalcy = np.where(~anomaly)
+            anomaly = x_ct < x_origin
+            ct = np.mean(data[anomaly], 0)
+        normalcy = ~anomaly
+        centroids.append(ct)
         data = data[normalcy]
-        x_cy = x_cy[normalcy]
+        x_origin = x_origin[normalcy]
         indices = indices[normalcy]
-        labels[indices] = c
-        c += 1
-    clustres.append(Cluster(indices,ct))
-        # {"cluster": indices, "centroid": ct})
-    # np.savetxt('verify_data/ikmeans_test.dat',labels,fmt="%d")
-    # print(clustres)
-    return labels, clustres
+        labels[indices] = cluster_label
+        cluster_label += 1
+    return labels, centroids
+
+if __name__ == "__main__":
+    data = np.loadtxt("../tests/data/ikmeans_test2.dat")
+    l, c = ik_means(data)

@@ -5,6 +5,7 @@ from scipy.spatial import distance as d
 import matplotlib.pyplot as plt
 import itertools
 from cluster import Cluster
+from pprint import pprint
 
 
 p = 0.5
@@ -22,7 +23,7 @@ def plot(data, clusters):
             setattr(c,'marker',next(markers))
         init = True
     for c in clusters:
-        plt.scatter(data[c.content][:, 0], data[c.content][:, 1], marker=c.marker, color=c.color)
+        plt.scatter(data[c.content][:, 0], data[c.content][:, 1], marker=c.marker, color=c.color, s=200)
     plt.pause(p)
 
 
@@ -53,6 +54,7 @@ def merge(clusters, a, b, distance):
 
 
 def a_ward(data, clusters, K):
+    print(clusters)
     distance = np.full((len(clusters),len(clusters)),float("inf"))
     for a in range(len(clusters)):
             for b in range(a,len(clusters)):
@@ -63,42 +65,35 @@ def a_ward(data, clusters, K):
                     Nb = cb.size
                     distance[a][b] = ((Na * Nb) / (Na + Nb)) * d.sqeuclidean(ca.centroid, cb.centroid)
                     distance[b][a] = distance[a][b]
+    print("initial:")
+    print(distance)
+    print("____________")
+    # plt.pause(40)
     while len(clusters) > K:
         m = np.argmin(distance)
         min_a = m//len(distance)
         min_b = m%len(distance)
-        min_w = float("inf")
-        # for a in range(len(clusters)):
-        #     for b in range(len(clusters)):
-        #         if a != b:
-        #             ca = clusters[a]
-        #             cb = clusters[b]
-        #             Na = ca.size
-        #             Nb = cb.size
-        #             w = ((Na * Nb) / (Na + Nb)) * d.sqeuclidean(ca.centroid, cb.centroid)
-        #             if w < min_w:
-        #                 min_a = a
-        #                 min_b = b
-        #                 min_w = w
+
         plot(data, clusters)
-        plt.scatter(data[clusters[min_a].content][:, 0], data[clusters[min_a].content][:, 1], marker='o', facecolors='none', s=200,
+        plt.scatter(data[clusters[min_a].content][:, 0], data[clusters[min_a].content][:, 1], marker='o', facecolors='none', s=500,
                     edgecolors='b')
-        plt.pause(0.01)
-        plt.scatter(data[clusters[min_b].content][:, 0], data[clusters[min_b].content][:, 1], marker='o', facecolors='none', s=200,
+        plt.pause(0.1)
+        plt.scatter(data[clusters[min_b].content][:, 0], data[clusters[min_b].content][:, 1], marker='o', facecolors='none', s=500,
                     edgecolors='b')
-        plt.pause(0.03)
+        plt.pause(0.3)
         plt.clf()
+        print(distance)
         distance = merge(clusters, max(min_a, min_b), min(min_a, min_b),distance)
     plot(data,clusters)
     plt.show()
     return clusters
 
 
-data = np.loadtxt("../tests/data/ikmeans_test0.dat")
+data = np.loadtxt("../tests/data/ikmeans_test2.dat")
 l, c = ik_means(data)
-c=[]
-for i,e in enumerate(data):
-    c.append(Cluster(np.array([i]),e))
+# c=[]
+# for i,e in enumerate(data):
+#     c.append(Cluster(np.array([i]),e))
 
 a_ward(data, c, 3)
 

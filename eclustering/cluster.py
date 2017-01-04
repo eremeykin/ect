@@ -10,3 +10,6 @@ class Cluster(object):
 
     def __str__(self):
         return "(l=" + str(len(self.content)) + " c=" + str(self.centroid) + ")"
+
+    def __repr__(self):
+        return str(self)
