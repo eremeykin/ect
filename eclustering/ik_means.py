@@ -1,15 +1,17 @@
 __author__ = 'eremeykin'
 import numpy as np
 from scipy.spatial import distance as d
-import matplotlib.pyplot as plt
+from tests.tools.plot import plot
 
-def ik_means(data, theta=1):
+
+def ik_means(data):
+    original_data = data
     data = np.copy(data)
     indices = np.arange(len(data))
     labels = np.zeros(len(data), dtype=int)
     centroids = []
 
-    origin = np.mean(data, 0)
+    origin = np.mean(data, 0)  # TODO check if origin depends of metric
 
     def dist_to(y):
         return lambda x: d.sqeuclidean(x, y)
@@ -34,7 +36,9 @@ def ik_means(data, theta=1):
         indices = indices[normalcy]
         labels[indices] = cluster_label
         cluster_label += 1
-    return labels, centroids
+        # plot(original_data, labels)
+    return labels, np.array(centroids)
+
 
 if __name__ == "__main__":
     data = np.loadtxt("../tests/data/ikmeans_test2.dat")
