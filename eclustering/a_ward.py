@@ -1,9 +1,7 @@
 __author__ = 'eremeykin'
 import numpy as np
-from ik_means import ik_means
 from scipy.spatial import distance as d
 import itertools
-from tests.tools.plot import plot
 
 np.set_printoptions(precision=0)
 p = 0.5
@@ -50,8 +48,8 @@ def a_ward(data, K, labels=None):
             if a != b:
                 ca = data[labels == a]
                 cb = data[labels == b]
-                Na, ct_a = len(ca), np.mean(ca)
-                Nb, ct_b = len(cb), np.mean(cb)
+                Na, ct_a = len(ca), np.mean(ca, axis=0)
+                Nb, ct_b = len(cb), np.mean(cb, axis=0)
                 distance[a][b] = ((Na * Nb) / (Na + Nb)) * d.sqeuclidean(ct_a, ct_b)
                 distance[b][a] = distance[a][b]
     while cluster_count > K:
@@ -60,11 +58,14 @@ def a_ward(data, K, labels=None):
         min_b = m % len(distance)
         distance, labels = merge(data, labels, max(min_a, min_b), min(min_a, min_b), distance)
         cluster_count -= 1
-        plot(data, labels)
+        # plot(data, labels)
     return labels
 
 
-data = np.loadtxt("../tests/data/ikmeans_test2.dat")
-l, c = ik_means(data)
-l = a_ward(data, 3, l)
-print(np.unique(l))
+if __name__ == "__main__":
+    data = np.loadtxt("../tests/data/ikmeans_test2.dat")
+    from pattern_init import a_pattern_init
+    from tests.tools.plot import plot, hold_plot
+    l, c = a_pattern_init(data)
+    l = a_ward(data, 3, l)
+    hold_plot(data, l)
