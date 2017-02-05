@@ -2,6 +2,18 @@ from scipy.optimize import fmin_tnc
 import numpy as np
 
 
+def weights(x, D, p):
+    res = 1 / (np.sum((x / D) ** (1 / (p - 1)), 0))
+    if not D.any():
+        return 1 / len(D)
+    if np.isnan(res):
+        return 1
+    return res
+
+
+weights_function = np.vectorize(weights, excluded=['D', 'p'])
+
+
 def minkowski_center(data, p):
     def D(X, a):
         return np.sum(np.abs(X - a) ** p) / len(X)

@@ -1,15 +1,9 @@
 __author__ = 'eremeykin'
 import numpy as np
 from scipy.spatial import distance as d
-from tests.tools.plot import plot, hold_plot
-from eclustering.minkowski import minkowski_center
+# from tests.tools.plot import plot, hold_plot
+from eclustering.common import minkowski_center, weights_function
 import collections
-
-import matplotlib
-
-matplotlib.use('Qt5Agg')
-
-import matplotlib.pyplot as plt
 
 
 def a_pattern_init(data):
@@ -44,24 +38,14 @@ def a_pattern_init(data):
         labels[indices] = cluster_label
         cluster_label += 1
         # plot(original_data, labels)
-    centroids.append(data[0])
+    if len(data) > 0:
+        centroids.append(data[0])
     return labels, np.array(centroids)
 
 
 def a_pattern_init_p_beta(data, p, beta):
-    def dist_to_p_beta(c, p, beta, w):
+    def dist_to_p_beta(c, w):
         return lambda y: np.dot((np.abs(y - c) ** p), w ** beta)
-
-    def w_funct(D, p):
-        def inner(x):
-            res = 1 / (np.sum((x / D) ** (1 / (p - 1)), 0))
-            if not D.any():
-                return 1 / len(D)
-            if np.isnan(res):
-                return 1
-            return res
-
-        return np.vectorize(inner)
 
     origin = minkowski_center(data, p)
     original_data = np.copy(data)
@@ -74,7 +58,7 @@ def a_pattern_init_p_beta(data, p, beta):
     cluster_label = 1
     while len(data) > 1:
         w = np.full(shape=(2, V), fill_value=1 / V)
-        x_origin = np.apply_along_axis(dist_to_p_beta(origin, p, beta, w[0]), axis=1, arr=data)
+        x_origin = np.apply_along_axis(dist_to_p_beta(origin, w[0]), axis=1, arr=data)
         ct_i = np.argmax(x_origin)
         ct = data[ct_i]
         ct_hist = collections.deque([None, None, ct], maxlen=3)
@@ -82,8 +66,8 @@ def a_pattern_init_p_beta(data, p, beta):
         anomaly[ct_i] = True
         while not (np.array_equal(ct_hist[-1], ct_hist[-2]) or np.array_equal(ct_hist[-1], ct_hist[-3])):
             #  w[0] for centroid cluster and w[1] for anomalous cluster
-            x_origin = np.apply_along_axis(dist_to_p_beta(origin, p, beta, w[0]), axis=1, arr=data)
-            x_ct = np.apply_along_axis(dist_to_p_beta(ct, p, beta, w[1]), axis=1, arr=data)
+            x_origin = np.apply_along_axis(dist_to_p_beta(origin, w[0]), axis=1, arr=data)
+            x_ct = np.apply_along_axis(dist_to_p_beta(ct, w[1]), axis=1, arr=data)
             anomaly = x_ct < x_origin
             ct = minkowski_center(data[anomaly], p)
             ct_hist.append(ct)
@@ -91,26 +75,30 @@ def a_pattern_init_p_beta(data, p, beta):
             normalcy = ~anomaly
             norm_data, anom_data = data[normalcy], data[anomaly]
             D0 = np.sum(np.abs(norm_data - origin) ** p, axis=0)
-            w[0] = w_funct(D0, p)(D0)
+            w[0] = weights_function(D0, D=D0, p=p)
             D1 = np.sum(np.abs(anom_data - ct) ** p, axis=0)
-            w[1] = w_funct(D1, p)(D1)
-            # plot(original_data, labels)
-            # plt.scatter(ct[0], ct[1], s=250, marker='x', color='k')
-            # plt.scatter(ct[0], ct[1], s=250, marker='o', facecolors='none', edgecolors='k')
-            # plt.scatter(origin[0], origin[1], s=250, marker='x', color='k')
-            # plt.scatter(origin[0], origin[1], s=250, marker='o', facecolors='none', edgecolors='k')
+            w[1] = weights_function(D1, D=D1, p=p)
         centroids.append(ct)
         weights.append(w[1])
         data = data[normalcy]
         indices = indices[normalcy]
         labels[indices] = cluster_label
         cluster_label += 1
-    centroids.append(data[0])
-    weights.append(np.full(shape=V, fill_value=1 / V))
-    return labels, centroids, weights
+    if len(data) > 0:
+        centroids.append(data[0])
+        weights.append(np.full(shape=V, fill_value=1 / V))
+    return labels, np.array(centroids), np.array(weights)
 
 
 if __name__ == "__main__":
-    data = np.loadtxt("../tests/data/ikmeans_test5.dat")
-    l, c, w = a_pattern_init_p_beta(data, p=10, beta=1)
-    hold_plot(data, l)
+    import matplotlib
+
+    matplotlib.use('Qt5Agg')
+    import matplotlib.pyplot as plt
+
+    data = np.loadtxt("../tests/data/ikmeans_test2.dat")
+    labels, centroids, weights = a_pattern_init_p_beta(data, p=10, beta=1)
+    print(labels)
+    print(centroids)
+    print(weights)
+    hold_plot(data, labels)
