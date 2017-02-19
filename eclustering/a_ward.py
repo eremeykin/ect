@@ -67,6 +67,7 @@ def a_ward(data, K_star, labels=None):
 
 
 def merge_a_ward_p_beta(data, labels, centroids, weights, a, b, distance, p):
+    print('merge ' + str(a) + ' with ' + str(b))
     labels[labels == a] = b  # merge clusters
     # TODO performance leak
     normalize = np.vectorize(lambda x: np.where(np.unique(labels) == x)[0][0])
@@ -81,7 +82,6 @@ def merge_a_ward_p_beta(data, labels, centroids, weights, a, b, distance, p):
     cb = data[labels == b]
 
     # update centroids and weights
-    # print(centroids)
     centroids[b] = minkowski_center(cb, p)
     D = np.sum(np.abs(cb - centroids[b]) ** p, axis=0)
     weights[b] = weights_function(D, D=D, p=p)
@@ -98,9 +98,9 @@ def merge_a_ward_p_beta(data, labels, centroids, weights, a, b, distance, p):
     return distance, labels, centroids, weights
 
 
-def a_ward_p_beta(data, p, beta, K_star, labels, centroids, weights):
+def a_ward_p_beta(data, p, beta, K_star, labels, centroids, weights, tobj=None):
     """Assumed that labels starts with 0 and takes ALL values to max value"""
-    K = labels.max()
+    K = labels.max()+1
     distance = np.full((K, K), np.inf)
     for a in range(K):
         for b in range(a, K):
@@ -111,27 +111,26 @@ def a_ward_p_beta(data, p, beta, K_star, labels, centroids, weights):
                 ct_b, Nb, wb = centroids[b], len(cb), weights[b]
                 distance[a][b] = ((Na * Nb) / (Na + Nb)) * np.dot(((wa + wb) / 2) ** beta, np.abs(ct_a - ct_b) ** p)
                 distance[b][a] = distance[a][b]
+    if tobj is not None: tobj.plot(data, labels, prefix='a_ward_p_beta')
+
     while K > K_star:
         m = np.argmin(distance)
         min_a = m // len(distance)
         min_b = m % len(distance)
         distance, labels, centroids, weights = merge_a_ward_p_beta(data, labels, centroids, weights,
                                                                    max(min_a, min_b), min(min_a, min_b), distance, p)
+        print(distance)
+        if tobj is not None: tobj.plot(data, labels, prefix='a_ward_p_beta')
         K -= 1
     return labels, centroids, weights
 
 
 if __name__ == "__main__":
-    data = np.loadtxt("../tests/data/ikmeans_test5.dat")
+    name = "ikmeans_test7.dat"
+    data = np.loadtxt("../tests/data/"+name)
     from pattern_init import a_pattern_init
-    from tests.tools.plot import plot, hold_plot
-
-    # l, c = a_pattern_init(data)
-    # l = a_ward(data, 3, l)
-    # print(l)
-    # hold_plot(data, l)
-    p = 3
-    beta = 1
-    labels, centroids, weights = a_pattern_init_p_beta(data, p, beta)
-    labels, centroids, weights = a_ward_p_beta(data, p, beta, 3, labels, centroids, weights)
-    hold_plot(data, labels)
+    from tests.tools.plot import TestObject
+    p, beta = 2, 2
+    labels, centroids, weights = a_pattern_init_p_beta(data, p, beta, TestObject(name))
+    # labels, centroids, weights = a_ward_p_beta(data, p, beta, 3, labels, centroids, weights,
+    #                                            TestObject(name))

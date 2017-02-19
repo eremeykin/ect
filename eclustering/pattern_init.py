@@ -1,3 +1,5 @@
+from tests.tools.plot import TestObject
+
 __author__ = 'eremeykin'
 import numpy as np
 from scipy.spatial import distance as d
@@ -5,8 +7,12 @@ from scipy.spatial import distance as d
 from eclustering.common import minkowski_center, weights_function
 import collections
 
+import matplotlib
 
-def a_pattern_init(data):
+matplotlib.use('Qt5Agg')
+
+
+def a_pattern_init(data, tobj=None):
     original_data = data
     data = np.copy(data)
     indices = np.arange(len(data))
@@ -30,6 +36,7 @@ def a_pattern_init(data):
             x_ct = np.apply_along_axis(dist_to(ct), 1, data)
             anomaly = x_ct < x_origin
             ct = np.mean(data[anomaly], 0)
+        tobj.plot(data, labels[indices], prefix='test')
         normalcy = ~anomaly
         centroids.append(ct)
         data = data[normalcy]
@@ -37,13 +44,13 @@ def a_pattern_init(data):
         indices = indices[normalcy]
         labels[indices] = cluster_label
         cluster_label += 1
-        # plot(original_data, labels)
     if len(data) > 0:
         centroids.append(data[0])
+    tobj.plot(original_data, labels, prefix='test')
     return labels, np.array(centroids)
 
 
-def a_pattern_init_p_beta(data, p, beta):
+def a_pattern_init_p_beta(data, p, beta, tobj=None):
     def dist_to_p_beta(c, w):
         return lambda y: np.dot((np.abs(y - c) ** p), w ** beta)
 
@@ -61,6 +68,7 @@ def a_pattern_init_p_beta(data, p, beta):
         x_origin = np.apply_along_axis(dist_to_p_beta(origin, w[0]), axis=1, arr=data)
         ct_i = np.argmax(x_origin)
         ct = data[ct_i]
+        print('ct = '+str(ct))
         ct_hist = collections.deque([None, None, ct], maxlen=3)
         anomaly = np.full(len(data), False, dtype=bool)
         anomaly[ct_i] = True
@@ -78,12 +86,18 @@ def a_pattern_init_p_beta(data, p, beta):
             w[0] = weights_function(D0, D=D0, p=p)
             D1 = np.sum(np.abs(anom_data - ct) ** p, axis=0)
             w[1] = weights_function(D1, D=D1, p=p)
+            print('W=')
+            print(w)
+        print('centroids='+str(centroids))
+        print('___________cut____________')
+        tobj.plot(data, labels[indices], centroids, prefix='a_pattern_init_p_beta')
         centroids.append(ct)
         weights.append(w[1])
         data = data[normalcy]
         indices = indices[normalcy]
         labels[indices] = cluster_label
         cluster_label += 1
+    tobj.plot(original_data, labels, prefix='a_pattern_init_p_beta')
     if len(data) > 0:
         centroids.append(data[0])
         weights.append(np.full(shape=V, fill_value=1 / V))
@@ -91,14 +105,9 @@ def a_pattern_init_p_beta(data, p, beta):
 
 
 if __name__ == "__main__":
-    import matplotlib
-
-    matplotlib.use('Qt5Agg')
-    import matplotlib.pyplot as plt
-
-    data = np.loadtxt("../tests/data/ikmeans_test2.dat")
-    labels, centroids, weights = a_pattern_init_p_beta(data, p=10, beta=1)
-    print(labels)
-    print(centroids)
-    print(weights)
-    hold_plot(data, labels)
+    data = np.loadtxt("../tests/data/ikmeans_test8.dat")
+    # a_pattern_init(data, tobj=TestObject('test'))
+    # exit()
+    p, beta = 2, 2
+    labels, centroids, weights = a_pattern_init_p_beta(data, p=p, beta=beta,
+                                                       tobj=TestObject(test_name='ikmeans_test2.dat'))
