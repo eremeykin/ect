@@ -73,6 +73,10 @@ def a_pattern_init_p_beta(data, p, beta, tobj=None):
         anomaly = np.full(len(data), False, dtype=bool)
         anomaly[ct_i] = True
         while not (np.array_equal(ct_hist[-1], ct_hist[-2]) or np.array_equal(ct_hist[-1], ct_hist[-3])):
+            print('____before____')
+            print('ct='+str(ct))
+            print('W=')
+            print(w)
             #  w[0] for centroid cluster and w[1] for anomalous cluster
             x_origin = np.apply_along_axis(dist_to_p_beta(origin, w[0]), axis=1, arr=data)
             x_ct = np.apply_along_axis(dist_to_p_beta(ct, w[1]), axis=1, arr=data)
@@ -86,6 +90,8 @@ def a_pattern_init_p_beta(data, p, beta, tobj=None):
             w[0] = weights_function(D0, D=D0, p=p)
             D1 = np.sum(np.abs(anom_data - ct) ** p, axis=0)
             w[1] = weights_function(D1, D=D1, p=p)
+            print('____after____')
+            print('ct='+str(ct))
             print('W=')
             print(w)
         print('centroids='+str(centroids))
@@ -109,5 +115,7 @@ if __name__ == "__main__":
     # a_pattern_init(data, tobj=TestObject('test'))
     # exit()
     p, beta = 2, 2
+    labels, centroids = a_pattern_init(data, tobj=TestObject(test_name='ikmeans_test2.dat'))
+
     labels, centroids, weights = a_pattern_init_p_beta(data, p=p, beta=beta,
                                                        tobj=TestObject(test_name='ikmeans_test2.dat'))

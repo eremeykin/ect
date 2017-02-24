@@ -1,7 +1,6 @@
 __author__ = 'eremeykin'
 import numpy as np
 from itertools import cycle
-import matplotlib
 from time import gmtime, strftime
 import os
 import shutil
@@ -39,8 +38,8 @@ class TestObject(object):
         fig = plt.figure()
         ax = fig.add_subplot(111)
 
-
-        plt.axis('equal')
+        # plt.axis('equal')
+        plt.gca().set_aspect('equal', adjustable='box')
         if self.x_lim is not None: plt.xlim(self.x_lim)
         if self.y_lim is not None: plt.ylim(self.y_lim)
 
