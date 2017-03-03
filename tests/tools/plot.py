@@ -16,7 +16,8 @@ lm_map = dict()
 
 
 class TestObject(object):
-    LOG_PATH = "../tests/test_logs"
+    LOG_PATH = "/home/eremeykin/PycharmProjects/effective-clustering/tests/test_logs"
+    DATA_PATH = "/home/eremeykin/PycharmProjects/effective-clustering/tests/data"
     if os.path.exists(LOG_PATH):
         shutil.rmtree(LOG_PATH)
     os.makedirs(LOG_PATH)
@@ -34,25 +35,18 @@ class TestObject(object):
         if self.y_lim is None:
             self.y_lim = ylim
 
+    @staticmethod
+    def load_data(name):
+        return np.loadtxt(TestObject.DATA_PATH + "/{}".format(name))
+
     def plot(self, data, labels=None, centroids=None, show_num=True, prefix=''):
         fig = plt.figure()
         ax = fig.add_subplot(111)
-
         # plt.axis('equal')
         plt.gca().set_aspect('equal', adjustable='box')
         if self.x_lim is not None: plt.xlim(self.x_lim)
         if self.y_lim is not None: plt.ylim(self.y_lim)
 
-        # ax1 = np.arange(0, max(data[:, 0]), 1)
-        # ax2 = np.arange(min(data[:, 0]), 0, 1)
-        # xticks = np.concatenate((ax1, ax2), axis=0)
-        # ay1 = np.arange(0, max(data[:, 1]), 1)
-        # ay2 = np.arange(min(data[:, 1]), 0, 1)
-        # yticks = np.concatenate((ay1, ay2), axis=0)
-        # ax.set_xticks(xticks)
-        # ax.set_yticks(yticks)
-
-        # plt.ion()
         if labels is None:
             labels = np.full(len(data), 1, dtype=int)
         for l in np.unique(labels):
@@ -76,7 +70,6 @@ class TestObject(object):
             '{}/{}  - {} #{} [{}].png'.format(TestObject.LOG_PATH, self.test_name, prefix, self.counter,
                                               strftime(" %H:%M (%d.%m)", gmtime()))
         )
-
         self.set_lims(plt.axes().get_xlim(), plt.axes().get_ylim())
         self.counter += 1
 

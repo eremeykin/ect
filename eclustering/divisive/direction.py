@@ -18,14 +18,24 @@ class KDE(object):
 
 class Direction(object):
     def __init__(self, cluster, vector):
-        P = np.dot(cluster.cluster, vector)
-        self.sort_indexes = np.argsort(P, axis=0)
-        self.sorted_global_indexes = cluster.global_indexes[self.sort_indexes]
-        self.P = np.sort(P, axis=0)
+        vector = vector / np.linalg.norm(vector)
+        Pns = np.dot(cluster.cluster, vector)
+        self.sort_indexes = np.argsort(Pns)
+        self.sorted_global_indexes = cluster.global_indexes[[self.sort_indexes]]
+        self.P = np.sort(Pns)
         kde = np.vectorize(KDE(self.P).kde)
         self.P_kde = kde(self.P)
         self._find_mins()
-        self._find_deepest_min()
+        self.mins_count = len(self.mins)
+        try:
+            dmi, dmv = min(self.mins, key=lambda x: x[1])
+            if kde((self.P[dmi] + (self.P[dmi+1]-self.P[dmi])/100)) < kde(self.P[dmi]):
+                dmi += 1
+                dmv = kde((self.P[dmi] + (self.P[dmi+1]-self.P[dmi])/100))
+            self.deepest_min_index = dmi
+            self.deepest_min_value = dmv
+        except ValueError:
+            self.deepest_min_index, self.deepest_min_value = None, None
 
     def _find_mins(self):
         self.mins = []
@@ -35,8 +45,3 @@ class Direction(object):
             right_value = self.P_kde[i + 1]
             if left_value > current_value and right_value > current_value:
                 self.mins.append((i, current_value))
-
-    def _find_deepest_min(self):
-        self.deepest_min_index, self.deepest_min_value = min(self.mins, key=lambda x: x[1])
-
-    def min_count(self):
