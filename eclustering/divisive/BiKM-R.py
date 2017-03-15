@@ -1,7 +1,7 @@
 import numpy as np
 
 from eclustering.divisive.direction import Direction
-from eclustering.pattern_init import a_pattern_init as ap_init
+from eclustering.pattern_initialization.anomalous_cluster import anomalous_cluster as ap_init
 from sklearn.cluster import KMeans
 from collections import Counter as Counter
 

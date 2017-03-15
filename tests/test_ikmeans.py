@@ -5,7 +5,7 @@ import numpy as np
 from time import time
 from eclustering.pattern_init import a_pattern_init
 
-
+# TODO refresh later
 class TestIKMeans(unittest.TestCase):
 
     @staticmethod

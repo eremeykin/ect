@@ -1,8 +1,8 @@
 import numpy as np
 
+from eclustering.pattern_initialization.anomalous_cluster_p_beta import anomalous_cluster_p_beta
 from eclustering.common import minkowski_center
-from eclustering.pattern_init import a_pattern_init_p_beta
-from tests.tools.plot import hold_plot, plot
+from tests.tools.plot import hold_plot
 
 
 def imwk_means(data, labels, centroids, weights, p, beta):
@@ -51,7 +51,7 @@ def imwk_means(data, labels, centroids, weights, p, beta):
 np.set_printoptions(precision=2, suppress=True)
 if __name__ == "__main__":
     data = np.loadtxt("../tests/data/ikmeans_test6.dat")
-    labels, centroids, weights = a_pattern_init_p_beta(data, p=10, beta=1)
+    labels, centroids, weights = anomalous_cluster_p_beta(data, p=10, beta=1)
     hold_plot(data, labels)
     labels, centroids, weights = imwk_means(data, labels, centroids, weights, p=3, beta=1)
     print('hold plot')

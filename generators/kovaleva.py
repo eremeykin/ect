@@ -1,6 +1,6 @@
 import numpy as np
 
-from tests.tools.plot import TestObject
+
 
 d_1, d_2 = 1, -1
 
@@ -37,6 +37,7 @@ def kovaleva(min_cluster_card, K, size, a):
 
 
 if __name__ == "__main__":
+    from tests.tools.plot import TestObject
     gen_data, gen_labels = kovaleva(60, 25, (1500, 2), 0.9)
     print(gen_labels)
     print(gen_data.shape)
