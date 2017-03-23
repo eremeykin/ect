@@ -35,6 +35,7 @@ def a_ward(data, K_star, labels=None):
         normalize = np.vectorize(lambda x: np.where(np.unique(labels) == x)[0][0])
         labels = normalize(labels)
     K = len(np.unique(labels))
+
     distance = np.full((K, K), np.inf)
     for a in range(K):
         for b in range(a, K):
@@ -46,6 +47,9 @@ def a_ward(data, K_star, labels=None):
                 distance[a][b] = ((Na * Nb) / (Na + Nb)) * d.sqeuclidean(ct_a, ct_b)
                 distance[b][a] = distance[a][b]
     while K > K_star:
+        print('K_star='+str(K_star))
+        print('K='+str(K))
+
         m = np.argmin(distance)
         min_a = m // len(distance)
         min_b = m % len(distance)

@@ -41,15 +41,6 @@ class _Cluster:
         ct_b = cluster2.centroid
         beta = cluster1.beta
         p = cluster1.p
-        # print('_______________')
-        # print('Na = ' + str(Na))
-        # print('Nb = ' + str(Nb))
-        # print('wa = ' + str(wa))
-        # print('wb = ' + str(wb))
-        # print('ct_a = ' + str(ct_a))
-        # print('ct_b = ' + str(ct_b))
-        # print('beta = ' + str(beta))
-        # print('p = ' + str(p))
         return ((Na * Nb) / (Na + Nb)) * np.dot(((wa + wb) / 2) ** beta, np.abs(ct_a - ct_b) ** p)
 
     @classmethod
@@ -95,7 +86,7 @@ def update_distance_matrix(cluster_objs, distance_matrix, index1, index2):
     return distance_matrix
 
 
-def NEW_a_ward_p_beta(data, p, beta, K_star, labels, centroids, weights, tobj=None):
+def a_ward_p_beta(data, p, beta, K_star, labels, centroids, weights, tobj=None):
     if labels is None:
         labels = np.arange(len(data))
         centroids = data
@@ -105,7 +96,6 @@ def NEW_a_ward_p_beta(data, p, beta, K_star, labels, centroids, weights, tobj=No
         cluster_objs.append(_Cluster(data, np.where(labels == k)[0], k, centroids[k], weights[k], p, beta))
     distance_matrix = calculate_distance_matrix(cluster_objs)
     while len(cluster_objs) > K_star:
-        # print(distance_matrix)
         best_cluster1_index, best_cluster2_index = select_best_clusters(cluster_objs, distance_matrix)
         if best_cluster1_index is None or best_cluster1_index is None:
             break
@@ -122,63 +112,6 @@ def NEW_a_ward_p_beta(data, p, beta, K_star, labels, centroids, weights, tobj=No
     return labels
 
 
-def merge_a_ward_p_beta(data, labels, centroids, weights, a, b, distance, p):
-    labels[labels == a] = b  # merge clusters
-    # TODO performance leak
-    normalize = np.vectorize(lambda x: np.where(np.unique(labels) == x)[0][0])
-    labels = normalize(labels)
-
-    # remove old entries
-    distance = np.delete(distance, a, 0)  # delete old row from distance matrix
-    distance = np.delete(distance, a, 1)  # delete old column from distance matrix
-    centroids = np.delete(centroids, a, 0)
-    weights = np.delete(weights, a, 0)
-
-    cb = data[labels == b]
-
-    # update centroids and weights
-    centroids[b] = minkowski_center(cb, p)
-    D = np.sum(np.abs(cb - centroids[b]) ** p, axis=0)
-    weights[b] = weights_function(D, D=D, p=p)
-
-    ct_b, Nb, wb = centroids[b], len(cb), weights[b]
-    for i in range(len(distance)):
-        if i == b:
-            distance[i][b] = np.inf
-            continue
-        ca = data[labels == i]
-        ct_a, Na, wa = centroids[i], len(ca), weights[i]
-        distance[i][b] = ((Na * Nb) / (Na + Nb)) * np.dot(((wa + wb) / 2) ** beta, np.abs(ct_a - ct_b) ** p)
-        distance[b][i] = distance[i][b]
-    return distance, labels, centroids, weights
-
-
-def a_ward_p_beta(data, p, beta, K_star, labels, centroids, weights, tobj=None):
-    """Assumed that labels starts with 0 and takes ALL values to max value"""
-    K = labels.max() + 1
-    distance = np.full((K, K), np.inf)
-    for a in range(K):
-        for b in range(a, K):
-            if a != b:
-                ca = data[labels == a]
-                cb = data[labels == b]
-                ct_a, Na, wa = centroids[a], len(ca), weights[a]
-                ct_b, Nb, wb = centroids[b], len(cb), weights[b]
-                distance[a][b] = ((Na * Nb) / (Na + Nb)) * np.dot(((wa + wb) / 2) ** beta, np.abs(ct_a - ct_b) ** p)
-                distance[b][a] = distance[a][b]
-    if tobj is not None: tobj.plot(data, labels, prefix='a_ward_p_beta')
-
-    while K > K_star:
-        m = np.argmin(distance)
-        min_a = m // len(distance)
-        min_b = m % len(distance)
-        distance, labels, centroids, weights = merge_a_ward_p_beta(data, labels, centroids, weights,
-                                                                   max(min_a, min_b), min(min_a, min_b), distance, p)
-        if tobj is not None: tobj.plot(data, labels, prefix='a_ward_p_beta')
-        K -= 1
-    return labels, centroids, weights
-
-
 if __name__ == "__main__":
     from tests.tools.plot import TestObject
 
@@ -187,5 +120,5 @@ if __name__ == "__main__":
     labels, centroids, weights = anomalous_cluster_p_beta(data, p, beta, TestObject('anomalous_cluster_p_beta'))
     # labels, centroids, weights = None, None, None
     tobj = TestObject('a_ward_p_beta')
-    labels = NEW_a_ward_p_beta(data, p, beta, 3, labels, centroids, weights, tobj)
+    labels = a_ward_p_beta(data, p, beta, 3, labels, centroids, weights, tobj)
     tobj.plot(data, labels, show_num=True)

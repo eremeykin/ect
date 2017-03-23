@@ -84,7 +84,7 @@ def BiKM_R(data, epsilon, s_directions, tobj=None):
         LAB = np.zeros(shape=len(data), dtype=int)
         for cluster_obj in cluster_objs:
             LAB[[cluster_obj.global_indexes]] = cluster_obj.label
-        tobj.plot(data, LAB, prefix="BiKM_R", show_num=False)
+        if tobj is not None: tobj.plot(data, LAB, prefix="BiKM_R", show_num=False)
     for cluster_obj in cluster_objs:
         labels[[cluster_obj.global_indexes]] = cluster_obj.label
     return labels

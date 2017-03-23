@@ -1,10 +1,11 @@
 import numpy as np
 
-from tests.tools.plot import TestObject
 from scipy.spatial.distance import sqeuclidean as se_dist
 
 
 def anomalous_cluster(data, tobj=None):
+    # from tests.tools.plot import TestObject
+    # tobj = TestObject()
     data_copy = np.copy(data)
     centroids = []
     indices = np.arange(len(data))
@@ -25,7 +26,7 @@ def anomalous_cluster(data, tobj=None):
             x_to_ct = np.apply_along_axis(lambda x: se_dist(x, ct), axis=1, arr=data)
             anomaly = x_to_ct < x_to_origin
             ct = np.mean(data[anomaly], 0)
-        tobj.plot(data, labels[[indices]], prefix=str(cluster_label))
+        if tobj is not None: tobj.plot(data, labels[[indices]], prefix=str(cluster_label), show_num=False)
         normalcy = ~anomaly
         centroids.append(ct)
         data = data[normalcy]
@@ -35,10 +36,15 @@ def anomalous_cluster(data, tobj=None):
         labels[indices] = cluster_label
     if len(data) > 0:
         centroids.append(data[0])
-    tobj.plot(data_copy, labels, prefix="RES")
+    if tobj is not None: tobj.plot(data_copy, labels, prefix="RES", show_num=False)
     return labels, np.array(centroids)
 
+
 if __name__ == "__main__":
-    data = np.loadtxt("../../tests/data/ikmeans_test8.dat")
+    from tests.tools.plot import TestObject
+
+    # data = np.loadtxt("../../tests/data/ikmeans_test8.dat")
+    data = np.loadtxt("/home/eremeykin/PycharmProjects/ect/gen_data_2.csv")
+    data = data[:, :2]
     tobj = TestObject('anomalous_cluster')
     labels, centroids = anomalous_cluster(data, tobj=tobj)

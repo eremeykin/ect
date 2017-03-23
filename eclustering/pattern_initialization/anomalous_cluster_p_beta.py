@@ -2,7 +2,6 @@ import collections
 
 import numpy as np
 from scipy.spatial.distance import minkowski
-from tests.tools.plot import TestObject
 from eclustering.common import get_weights, minkowski_center, weighed_minkowski
 
 
@@ -53,6 +52,8 @@ def anomalous_cluster_p_beta(data, p, beta, tobj=None):
 
 
 if __name__ == "__main__":
+    from tests.tools.plot import TestObject
+
     data = TestObject.load_data("ikmeans_test8.dat")
     tobj = TestObject('anomalous_cluster_p_beta')
     p, beta = 2, 2

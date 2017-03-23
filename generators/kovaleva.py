@@ -30,7 +30,6 @@ def kovaleva(min_cluster_card, K, size, a):
         c = np.random.uniform(low=0.025 * (d_1 - d_2) / 12, high=0.05 * (d_1 - d_2) / 12, size=V)
         cov = np.diag(c)
         cluster_data = np.random.multivariate_normal(mean, cov, min_cluster_card + makeweights[k])
-        # cluster_data = np.full(cluster_data.shape, mean)
         data = np.row_stack((data, cluster_data))
         labels = np.column_stack((labels, np.full((1, len(cluster_data)), k, int)))
     return data, labels[0]
@@ -39,8 +38,6 @@ def kovaleva(min_cluster_card, K, size, a):
 if __name__ == "__main__":
     from tests.tools.plot import TestObject
     gen_data, gen_labels = kovaleva(60, 25, (1500, 2), 0.9)
-    print(gen_labels)
-    print(gen_data.shape)
     np.savetxt('../../tests/data/ikmeans_test12.dat', gen_data)
     to = TestObject()
     to.plot(gen_data, gen_labels, show_num=False)
