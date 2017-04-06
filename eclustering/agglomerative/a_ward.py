@@ -47,8 +47,6 @@ def a_ward(data, K_star, labels=None):
                 distance[a][b] = ((Na * Nb) / (Na + Nb)) * d.sqeuclidean(ct_a, ct_b)
                 distance[b][a] = distance[a][b]
     while K > K_star:
-        print('K_star='+str(K_star))
-        print('K='+str(K))
 
         m = np.argmin(distance)
         min_a = m // len(distance)

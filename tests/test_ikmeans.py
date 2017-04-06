@@ -26,7 +26,6 @@ class TestIKMeans(unittest.TestCase):
         output,c = a_pattern_init(tdata)
         end = time()
         assert np.array_equal(output, vdata)
-        print(test + ' N=' + '{:5d}'.format(len(tdata)) + ' finished in ' + '{:0.4f}'.format(end - start) + ' sec.')
 
     def test_1(self):
         test = '/ikmeans_test1.dat'

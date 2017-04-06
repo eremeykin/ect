@@ -43,8 +43,6 @@ def imwk_means(data, labels, centroids, weights, p, beta):
                 if np.isnan(w):
                     w = 1
                 weights[k][v] = w
-        # plot(data, labels, centroids)
-        # print('plot')
     return labels, weights, centroids
 
 
