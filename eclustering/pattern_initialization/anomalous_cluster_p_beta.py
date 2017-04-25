@@ -13,7 +13,7 @@ def anomalous_cluster_p_beta(data, p, beta, tobj=None):
     labels = np.zeros(len(data), dtype=int)
     V = data.shape[1]
 
-    # TODO define minkowski_center
+
     origin = minkowski_center(data, p)
 
     cluster_label = 0
