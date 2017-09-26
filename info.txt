@@ -24,3 +24,8 @@ how to install on Windows
 8) pip3 install pyqt5
 9) pip3 install scikit-learn
 
+Testing
+1) sudo pip3 install - U pytest
+2) sudo pip3 install pytest-qt
+3) sudo apt install tox
+
