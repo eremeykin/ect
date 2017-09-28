@@ -132,8 +132,6 @@ class AWard:
         del self.clusters[c]
         self.distance_matrix = np.delete(self.distance_matrix, c, axis=0)
         self.distance_matrix = np.delete(self.distance_matrix, c, axis=1)
-        # del self.distance_matrix[:, c]
-        # del self.distance_matrix[c, :]
 
     def update_cluster(self, at_index, new_cluster):
         self.clusters[at_index] = new_cluster
@@ -144,6 +142,12 @@ class AWard:
             if i > at_index:
                 self.distance_matrix[at_index, i] = self.award_distance(new_cluster,
                                                                         self.clusters[i])
+
+    def check_criterion(self, cluster1, cluster2):
+        w = lambda clst: ((clst.get_data() - clst.get_centroid()) ** 2).sum()
+        delta = lambda c1, c2: w(Cluster.merge(c1, c2)) - w(c1) - w(c2)
+
+        return delta(cluster1, cluster2) < alpha * w(Cluster.merge(cluster1, cluster2))
 
 
 def a_ward(data, K_star, labels=None):
@@ -163,7 +167,6 @@ if __name__ == "__main__":
 
     # start = time.time()
     result = AWard(data, labels, kstar).run()
-
 
     print("\n".join([str(x) for x in result]))
 
