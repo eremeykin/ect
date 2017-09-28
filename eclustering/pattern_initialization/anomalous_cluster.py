@@ -44,7 +44,7 @@ if __name__ == "__main__":
     from tests.tools.plot import TestObject
 
     # data = np.loadtxt("../../tests/data/ikmeans_test8.dat")
-    data = np.loadtxt("/home/eremeykin/PycharmProjects/ect/gen_data_2.csv")
+    data = np.loadtxt("/home/eremeykin/PycharmProjects/ectgui/gen_data_2.csv")
     data = data[:, :2]
     tobj = TestObject('anomalous_cluster')
     labels, centroids = anomalous_cluster(data, tobj=tobj)

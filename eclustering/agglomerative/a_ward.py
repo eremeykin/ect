@@ -14,14 +14,14 @@ def merge_a_ward(data, labels, a, b, distance):
     distance = np.delete(distance, a, 1)
 
     cb = data[labels == b]
-    ct_b = np.mean(cb)
+    ct_b = np.mean(cb, axis=1)
     Nb = len(cb)
     for i in range(len(distance)):
         if i == b:
             distance[i][b] = np.inf
             continue
         ca = data[labels == i]
-        ct_a = np.mean(ca)
+        ct_a = np.mean(ca, axis=1)
         Na = len(ca)
         distance[i][b] = ((Na * Nb) / (Na + Nb)) * d.sqeuclidean(ct_a, ct_b)
         distance[b][i] = distance[i][b]
@@ -47,7 +47,6 @@ def a_ward(data, K_star, labels=None):
                 distance[a][b] = ((Na * Nb) / (Na + Nb)) * d.sqeuclidean(ct_a, ct_b)
                 distance[b][a] = distance[a][b]
     while K > K_star:
-
         m = np.argmin(distance)
         min_a = m // len(distance)
         min_b = m % len(distance)
@@ -58,6 +57,7 @@ def a_ward(data, K_star, labels=None):
 
 if __name__ == "__main__":
     from tests.tools.plot import TestObject
+
     data = TestObject.load_data("ikmeans_test7.dat")
     K_star = 4
     labels, centroids, weights = a_ward(data, K_star)
