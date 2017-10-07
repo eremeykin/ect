@@ -1,0 +1,38 @@
+Install devenv on Ubuntu
+1) install pandas:
+    python -m pip install -U pip
+    pip install -U setuptools
+    pip install -U virtualenv
+    pip install pandas
+2) install numpy (already in pandas)
+3) install scipy
+    sudo apt-get install gfortran libopenblas-dev liblapack-dev
+    (see http://www.lfd.uci.edu/~gohlke/pythonlibs/#scipyexit)
+4) install matplotlib:
+5) install pyqt5
+pyqt5 (.net ->windows sdk->build sip->pyqt5
+http://stackoverflow.com/questions/16846501/how-to-install-pyqt5-on-windows)
+
+Install devenv on Windows
+1) install python 3.6 https://www.python.org/downloads/
+2?) install .Net 4.5.1 https://www.microsoft.com/net/download/framework
+3?) install Microsoft Visual C++ Build Tools http://landinghub.visualstudio.com/visual-cpp-build-tools
+4) install numpy+mlk from http://www.lfd.uci.edu/~gohlke/pythonlibs/#numpy 
+	pip3 install "numpy-1.12.1+mkl-cp36-cp36m-win_amd64.whl"
+5) install scipy from http://www.lfd.uci.edu/~gohlke/pythonlibs/#scipy
+	pip3 install scipy-0.19.0-cp36-cp36m-win_amd64.whl
+6) pip3 install pandas
+7) pip3 install matplotlib
+8) pip3 install pyqt5
+9) pip3 install scikit-learn
+
+10) run command: (from the directory with .py)
+    pyinstaller --hidden-import sklearn.neighbors.typedefs ect_main_window.py
+11)Add libs:
+    C:\Users\Dev\AppData\Local\Programs\Python\Python36\Lib\site-packages\PyQt5\Qt\bin
+
+Testing
+1) sudo pip3 install - U pytest
+2) sudo pip3 install pytest-qt
+3) sudo apt install tox
+
