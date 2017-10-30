@@ -100,10 +100,7 @@ class AWard:
     def find_nearest(self):
 
         if not self.distance_matrix_init:
-            start = time.time()
             self.calculate_distance_matrix()
-            end = time.time()
-            self.T += end - start
         if not self.distance_matrix_init:
             self.calculate_distance_matrix()
         if not self.distance_matrix_init:
@@ -119,21 +116,15 @@ class AWard:
         return c1, c2
 
     def run(self):
-        self.T = 0
         k = len(self.clusters)
-        while k>0:
-        # while k > self.kstar:
-            # prinmt(self.distance_matrix)
+        while k > self.kstar:
             k -= 1
             c1, c2 = self.find_nearest()
-            print("merge {} with {}".format(c1, c2))
             new_cluster = Cluster.merge(self.clusters[c1], self.clusters[c2])
             self.delete_cluster(c2)
             self.update_cluster(c1, new_cluster)
-        # print(self.T)
         k = len(self.clusters)
         while k > self.kstar:
-            # print(self.distance_matrix)
             k -= 1
             c1, c2 = self.find_nearest()
             new_cluster = Cluster.merge(self.clusters[c1], self.clusters[c2])
@@ -174,38 +165,19 @@ def a_ward(data, K_star, labels=None):
     return AWard(data, labels, K_star).run()
 
 
-sys.argv += ["/media/d_disk/projects/Clustering/utils/data15/data10x15bs.pts"]
-sys.argv += ["/media/d_disk/projects/Clustering/utils/labels15/data10x15bs.lbs"]
-sys.argv += [4]
-
-if __name__ == "__main__":
-    return AWard(data, labels, K_star)
+# sys.argv += ["/media/d_disk/projects/Clustering/utils/data15/data10x15bs.pts"]
+# sys.argv += ["/media/d_disk/projects/Clustering/utils/labels15/data10x15bs.lbs"]
+# sys.argv += [4]
 
 
 if __name__ == "__main__":
     import sys
-    import time
-
     np.set_printoptions(suppress=True, precision=4, threshold=np.nan)
     points_file = sys.argv[1]
     labels_file = sys.argv[2]
     kstar = int(sys.argv[3])
     data = np.loadtxt(points_file)
     labels = np.loadtxt(labels_file, dtype=int)
-
-    # start = time.time()
     result = AWard(data, labels, kstar).run()
 
     print("\n".join([str(x) for x in result]))
-
-
-
-    # end = time.time()
-    # for i in range(0, len(result)):
-    #     print(str(result[i])+" ", end="")
-    # print("\ntime:" + str((end - start)))
-
-    # from tests.tools.plot import TestObject
-    # data = TestObject.load_data("ikmeans_test7.dat")
-    # K_star = 4
-    # labels, centroids, weights = a_ward(data, K_star)

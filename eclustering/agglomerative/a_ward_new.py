@@ -66,6 +66,11 @@ class Cluster:
 
 
 class NNGAlogrithm:
+    ''' Implements Nearest-neighbor chain algorithm.
+    See https://www.revolvy.com/main/index.php?s=Nearest-neighbor%20chain%20algorithm&item_type=topic
+    or wikipedia
+    '''
+
     def __init__(self, clusters, K):
         self.clusters = clusters
         self.remaining_clusters = self.clusters[:]
@@ -89,12 +94,7 @@ class NNGAlogrithm:
 
     def run(self):
         label = self.initial_clusters_number
-        # print(self.K)
         while label < 2 * self.initial_clusters_number - 1:
-            # print(self.clusters)
-            # for cluster in self.clusters:
-            #     print("{}: {}".format(cluster, cluster.points_indices))
-
             if not self.stack:
                 random_cluster = self.clusters[-1]
                 self.stack.append(random_cluster)
@@ -108,7 +108,6 @@ class NNGAlogrithm:
                 self.Z = np.vstack((self.Z, np.array([top.get_label(), nearest.get_label(), label, dist])))
                 self.stack.remove(top)
                 self.stack.remove(nearest)
-                # print("merge {} with {}".format(top.get_label(), nearest.get_label()))
                 new_cluster = Cluster.merge(top, nearest, label)
                 label += 1
                 self.clusters.append(new_cluster)
@@ -117,7 +116,6 @@ class NNGAlogrithm:
                 self.remaining_clusters.append(new_cluster)
             else:
                 self.stack.append(nearest)
-        # print(self.T)
 
 
 class AWard:
@@ -148,22 +146,15 @@ class AWard:
         nng.run()
         self.clusters = nng.clusters
         Z = nng.Z
-        # print(nng.Z)
         Zs = Z[Z[:, -1].argsort()]
         pointer = len(Zs) - self.kstar + 1
-        # print(pointer)
         Zsl = Zs[:pointer, 0:2]
-        # print(Zsl)
         result_clusters = []
         while len(result_clusters) < self.kstar:
             # print("consider {}".format(Zs[pointer, 2]))
             if Zs[pointer, 2] not in Zsl:
                 result_clusters.append(nng.clusters[int(Zs[pointer,2])])
             pointer-=1
-        # print("-------------")
-        # print(Zs)
-        # print(self.T)
-        # print(result_clusters)
         self.clusters = result_clusters
         result = np.full(fill_value=0, shape=self.dim_rows)
         for c in range(0, len(self.clusters)):
@@ -184,9 +175,9 @@ def a_ward(data, K_star, labels=None):
     return AWard(data, labels, K_star).run()
 
 
-sys.argv += ["/media/d_disk/projects/Clustering/utils/data15/data1000x15bs.pts"]
-sys.argv += ["/media/d_disk/projects/Clustering/utils/labels15/data1000x15bs.lbs"]
-sys.argv += [4]
+# sys.argv += ["/media/d_disk/projects/Clustering/utils/data15/data1000x15bs.pts"]
+# sys.argv += ["/media/d_disk/projects/Clustering/utils/labels15/data1000x15bs.lbs"]
+# sys.argv += [4]
 
 if __name__ == "__main__":
     np.set_printoptions(suppress=True, precision=4, threshold=np.nan)
@@ -198,17 +189,4 @@ if __name__ == "__main__":
 
     start = time.time()
     result = AWard(data, labels, kstar).run()
-    # print(time.time() - start)
     print("\n".join([str(x) for x in result]))
-
-
-
-    # end = time.time()
-    # for i in range(0, len(result)):
-    #     print(str(result[i])+" ", end="")
-    # print("\ntime:" + str((end - start)))
-
-    # from tests.tools.plot import TestObject
-    # data = TestObject.load_data("ikmeans_test7.dat")
-    # K_star = 4
-    # labels, centroids, weights = a_ward(data, K_star)

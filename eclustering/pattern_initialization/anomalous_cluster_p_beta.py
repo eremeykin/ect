@@ -47,7 +47,7 @@ def anomalous_cluster_p_beta(data, p, beta, tobj=None):
         ct = minkowski_center(data, p)
         centroids.append(ct)
         weights.append(np.full(ct.shape, 1 / len(ct)))
-    tobj.plot(data_copy, labels, show_num=False, prefix="RESULT")
+    # tobj.plot(data_copy, labels, show_num=False, prefix="RESULT")
     return labels, np.array(centroids), np.array(weights)
 
 
@@ -58,4 +58,4 @@ if __name__ == "__main__":
     tobj = TestObject('anomalous_cluster_p_beta')
     p, beta = 2, 2
     labels, centroids, weights = anomalous_cluster_p_beta(data, p, beta, tobj=tobj)
-    tobj.plot(data, labels, centroids=centroids, prefix="RESULT")
+    tobj.plot(data, labels, centroids=centroeids, prefix="RESULT")
