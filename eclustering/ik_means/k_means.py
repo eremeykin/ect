@@ -52,5 +52,4 @@ if __name__ == "__main__":
     labels, centroids, weights = anomalous_cluster_p_beta(data, p=10, beta=1)
     hold_plot(data, labels)
     labels, centroids, weights = imwk_means(data, labels, centroids, weights, p=3, beta=1)
-    print('hold plot')
     hold_plot(data, labels)
