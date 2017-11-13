@@ -2,7 +2,7 @@ import collections
 
 import numpy as np
 from scipy.spatial.distance import minkowski
-from eclustering.common import get_weights, minkowski_center, weighed_minkowski
+from clustering.common import get_weights, minkowski_center, weighed_minkowski
 
 
 def anomalous_cluster_p_beta(data, p, beta, tobj=None):

@@ -1,7 +1,7 @@
 import numpy as np
 
-from eclustering.pattern_initialization.anomalous_cluster_p_beta import anomalous_cluster_p_beta
-from eclustering.common import minkowski_center
+from clustering.pattern_initialization.anomalous_cluster_p_beta import anomalous_cluster_p_beta
+from clustering.common import minkowski_center
 from tests.tools.plot import hold_plot
 
 

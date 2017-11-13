@@ -1,7 +1,7 @@
 import numpy as np
 
-from eclustering.pattern_initialization.anomalous_cluster_p_beta import anomalous_cluster_p_beta
-from eclustering.common import get_weights, minkowski_center, weighed_minkowski
+from clustering.pattern_initialization.anomalous_cluster_p_beta import anomalous_cluster_p_beta
+from clustering.common import get_weights, minkowski_center, weighed_minkowski
 
 
 class _Cluster:

@@ -1,6 +1,6 @@
 import numpy as np
 
-from eclustering.divisive.direction import Direction
+from clustering.divisive.direction import Direction
 
 
 class _Cluster(object):

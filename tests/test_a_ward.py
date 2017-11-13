@@ -1,5 +1,5 @@
 import numpy as np
-from eclustering.agglomerative.a_ward import a_ward
+from clustering.agglomerative.a_ward import a_ward
 import time
 DATA_DIR = "data/a_ward/"
 

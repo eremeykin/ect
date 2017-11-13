@@ -156,11 +156,12 @@ class AWard:
 
     @staticmethod
     def check_criterion(cluster1, cluster2, cluster):
-        alpha = 0.5
+        alpha = 0.18
         print('{:10.4} = {:10.4} U {:10.4}; '.format(cluster.w, cluster1.w, cluster2.w), end='')
         print('{:10.4} < {:10.4} : {}'.format(cluster.w - cluster1.w - cluster2.w, alpha * cluster.w,
                                               cluster.w - cluster1.w - cluster2.w < alpha * cluster.w))
-        return cluster.w - cluster1.w - cluster2.w < alpha * cluster.w
+        return (1-alpha) * cluster.w < cluster1.w + cluster2.w
+        # return cluster.w - cluster1.w - cluster2.w < alpha * cluster.w
 
     def run(self):
         nng = NNGAlogrithm(self.clusters)
@@ -196,6 +197,10 @@ class AWard:
             cluster = self.clusters[c]
             for index in cluster.points_indices:
                 result[index] = c
+        u = np.unique(result)
+        d = dict(zip(np.unique(u), np.arange(0, len(u))))
+        result = [d[x] for x in result]
+        # print(result)
         return result
 
 
