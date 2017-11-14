@@ -4,6 +4,7 @@ import time
 
 
 class Cluster:
+    """ Base cluster"""
     def __init__(self, label, power):
         self._label = label  # unique label of cluster
         self._points_indices = []  # indices of points that are in cluster
