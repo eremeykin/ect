@@ -16,6 +16,7 @@ def test_symmetric_16points():
 def test_iris():
     data = np.loadtxt('{}iris.pts'.format(DATA_DIR))
     result = a_ward(data, 3, np.arange(0, len(data), dtype=int))
+    # compare with sklearn implementation
     from sklearn.cluster import AgglomerativeClustering
     model = AgglomerativeClustering(n_clusters=3)
     model.fit(data)

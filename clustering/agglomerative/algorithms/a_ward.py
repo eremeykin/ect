@@ -71,7 +71,7 @@ class AWard:
             cluster = result_clusters[c]
             for index in cluster.points_indices:
                 result[index] = c
-        # todo check the code below. don't know what is it
+        # TODO check the code below. don't know what is it
         u = np.unique(result)
         d = dict(zip(np.unique(u), np.arange(0, len(u))))
         result = [d[x] for x in result]
@@ -81,14 +81,6 @@ class AWard:
 def a_ward(data, k_star=None, labels=None):
     run_award = AWard(data, labels, k_star)
     return run_award()
-
-
-# set centroids and w
-# for cluster in self.clusters:
-#     data = self.data[cluster.points_indices]
-#     cluster.centroid = np.mean(data, axis=0)
-#     cluster.w = ((data - cluster.centroid) ** 2).sum()
-
 
 sys.argv += ["/home/eremeykin/d_disk/projects/Clustering/utils/data/data10ws.pts"]
 sys.argv += ["/home/eremeykin/d_disk/projects/Clustering/utils/labels/data10ws.lbs"]

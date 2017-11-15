@@ -14,9 +14,6 @@ class NearestNeighborChain:
         self._clusters = clusters
         self._remaining_clusters = self._clusters[:]
         self._initial_clusters_number = len(clusters)
-        # merge_matrix is matrix that consists of 4 columns and #merges rows
-        # 1,2 columns - two clusters to merge,
-        # 3 column name of new cluster, 4 column - distance between clusters to merge
         self.merge_matrix = np.empty(shape=(0, 4), dtype=float)
 
     def _find_nearest(self, base_cluster):
