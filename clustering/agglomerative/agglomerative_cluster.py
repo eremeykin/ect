@@ -12,7 +12,6 @@ class AgglomerativeCluster(Cluster):
         super().__init__(label, data)
         self._w = None
 
-
     @staticmethod
     def merge(c1, c2, new_label):
         """Merges two clusters to one.
@@ -51,6 +50,17 @@ class AgglomerativeCluster(Cluster):
         delta = cluster.centroid - self.centroid
         distance = ((na * nb) / (na + nb)) * (sum(delta ** 2))
         return distance
+
+
+class AgglomerativeClusterPBeta(Cluster):
+    """Cluster for Agglomerative clustering with p and beta parameters"""
+
+    def __init__(self, label, data, p, beta, weights=None):
+        super().__init__(label, data)
+        self.p = p
+        self.beta = beta
+        if weights is None:
+            self.weights = np.full(shape=(1, self._dim_cols), fill_value=1 / self._dim_cols)
 
 
 class WUndefined(BaseException):

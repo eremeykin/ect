@@ -1,7 +1,17 @@
 import numpy as np
 
+# class ClusterFactory:
+#
+#     def __init__(self):
+#         self.clusters = []
+#         pass
+#
+#     def create_empty_cluster(self):
+#         new_cluster = _Cluster()
+#
+#         return new_cluster
 
-class Cluster:
+class _Cluster:
     """Base cluster
 
     :param int label: integer unique label of this cluster
@@ -13,6 +23,7 @@ class Cluster:
         self._data = data
         self._points_indices = []
         self._centroid = None
+        self._dim_cols = data.shape[1]
 
     @property
     def label(self):

@@ -91,6 +91,5 @@ if __name__ == "__main__":
     data = np.loadtxt(sys.argv[1])
     labels = np.loadtxt(sys.argv[2], dtype=int)
     k_star = int(sys.argv[3])
-    # k_star = none
     result = a_ward(data, k_star, labels)
     print("\n".join([str(x) for x in result]))
