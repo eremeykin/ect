@@ -1,21 +1,23 @@
 import numpy as np
-from clustering.agglomerative.a_ward import a_ward
-import time
+
+from clustering.agglomerative.algorithms.a_ward import a_ward
+from tests.tools import transformation_exists
+
 DATA_DIR = "data/a_ward/"
 
 
 def test_symmetric_16points():
-    data = np.loadtxt('{}symmetric_16points.pts'.format(DATA_DIR))
+    data = np.loadtxt('{}symmetric_15points.pts'.format(DATA_DIR))
     result = a_ward(data, 5, np.arange(0, len(data), dtype=int))
-    labels = np.loadtxt('{}symmetric_16points.lbs'.format(DATA_DIR), dtype=int)
-    assert np.array_equal(labels, result)
-#
-# def test_time():
-#     files = ['data10bs','data10ms','data10ws',
-#                  'data100bs', 'data100ms', 'data100ws',
-#                  'data1000bs', 'data1000ms', 'data1000ws',
-#                  'data10000bs', 'data10000ms', 'data1000ws']
-#     for file in files:
-#         start = time.time()
-#         print({})
-#
+    actual = np.loadtxt('{}symmetric_15points.lbs'.format(DATA_DIR), dtype=int)
+    assert transformation_exists(actual, result)
+
+
+def test_iris():
+    data = np.loadtxt('{}iris.pts'.format(DATA_DIR))
+    result = a_ward(data, 3, np.arange(0, len(data), dtype=int))
+    from sklearn.cluster import AgglomerativeClustering
+    model = AgglomerativeClustering(n_clusters=3)
+    model.fit(data)
+    actual = model.labels_
+    assert transformation_exists(actual, result)

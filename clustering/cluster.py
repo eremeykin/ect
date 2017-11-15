@@ -1,9 +1,14 @@
+import numpy as np
+
+
 class Cluster:
     """Base cluster
 
     :param int label: integer unique label of this cluster
     :param numpy.array data: of data on which the cluster is defined"""
     def __init__(self, label, data):
+        assert isinstance(label, int)
+        assert isinstance(data, np.ndarray)
         self._label = label
         self._data = data
         self._points_indices = []
@@ -12,7 +17,7 @@ class Cluster:
     @property
     def label(self):
         """A unique label for cluster. It is Integer number."""
-        return self.label
+        return self._label
 
     @property
     def points_indices(self):
@@ -30,7 +35,7 @@ class Cluster:
         """Centroid of this cluster
          :raises CentroidUndefined: if this cluster is empty."""
         if self._centroid is None:
-            raise CentroidUndefined('This cluster is empty. Centroid undefined : {}' % self)
+            raise CentroidUndefined('Centroid is undefined for empty cluster: {}' % self)
         return self._centroid
 
     def add_point(self, point_index):
@@ -38,7 +43,19 @@ class Cluster:
         :param int point_index: index of the point in cluster data to be added
 
         """
+        point = self.data[point_index]
+        if self.power == 0:
+            self._centroid = point
+        else:
+            assert self._centroid is not None
+            # TODO Be careful with arbitrary Minkowski power!
+            self._centroid = (self.centroid * self.power + point) / (self.power + 1)
         self.points_indices.append(point_index)
+
+    @property
+    def data(self):
+        """Data on which this cluster is defined"""
+        return self._data
 
     def __hash__(self):
         return hash(self.label)
