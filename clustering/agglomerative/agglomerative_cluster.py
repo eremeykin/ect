@@ -1,17 +1,21 @@
 import numpy as np
+from abc import abstractmethod
 from clustering.cluster import Cluster
 from clustering.common import minkowski_center
 
 
-# class AgglomerativeCluster(Cluster):
-#
-#     def __init__(self, label, data):
-#         super().__init__(label, data)
-#
-#     def
-
-# TODO rename to AWard cluster
 class AgglomerativeCluster(Cluster):
+
+    def __init__(self, label, data):
+        super().__init__(label, data)
+
+    @staticmethod
+    @abstractmethod
+    def merge(cluster1, cluster2, new_label):
+        pass
+
+
+class AWardCluster(Cluster):
     """Cluster for agglomerative clustering
 
     :param int label: integer unique label of this cluster
@@ -24,13 +28,13 @@ class AgglomerativeCluster(Cluster):
     @staticmethod
     def merge(c1, c2, new_label):
         """Merges two clusters to one.
-        :param AgglomerativeCluster c1: first cluster to merge
-        :param AgglomerativeCluster c2: second cluster to merge
+        :param AWardCluster c1: first cluster to merge
+        :param AWardCluster c2: second cluster to merge
         :param int new_label: a label to assign for new cluster"""
         assert c1.label != c2.label
         assert c1.data is c2.data, " The clusters are not defined on same data. Unable to merge. "
         new_centroid = (c1.centroid * c1.power + c2.centroid * c2.power) / (c1.power + c2.power)
-        new_cluster = AgglomerativeCluster(new_label, c1.data)
+        new_cluster = AWardCluster(new_label, c1.data)
         new_cluster._points_indices = c1.points_indices + c2.points_indices
         new_cluster._centroid = new_centroid
         new_cluster._w = c1.w + c2.w + (((c1.power * c2.power) / (c1.power + c2.power)) *
@@ -67,7 +71,7 @@ class AgglomerativeCluster(Cluster):
         return distance
 
 
-class AgglomerativeClusterPBeta(Cluster):
+class AWardClusterPBeta(Cluster):
     """Cluster for Agglomerative clustering with p and beta parameters"""
 
     def __init__(self, label, data, p, beta, weights=None):

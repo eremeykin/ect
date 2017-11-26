@@ -1,7 +1,7 @@
 import numpy as np
 
 class Cluster:
-    """Base cluster
+    """Base immutable cluster
 
     :param int label: integer unique label of this cluster
     :param numpy.array data: of data on which the cluster is defined"""
