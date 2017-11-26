@@ -1,17 +1,6 @@
 import numpy as np
 
-# class ClusterFactory:
-#
-#     def __init__(self):
-#         self.clusters = []
-#         pass
-#
-#     def create_empty_cluster(self):
-#         new_cluster = _Cluster()
-#
-#         return new_cluster
-
-class _Cluster:
+class Cluster:
     """Base cluster
 
     :param int label: integer unique label of this cluster
@@ -48,20 +37,6 @@ class _Cluster:
         if self._centroid is None:
             raise CentroidUndefined('Centroid is undefined for empty cluster: {}' % self)
         return self._centroid
-
-    def add_point(self, point_index):
-        """Adds one point to this cluster.
-        :param int point_index: index of the point in cluster data to be added
-
-        """
-        point = self.data[point_index]
-        if self.power == 0:
-            self._centroid = point
-        else:
-            assert self._centroid is not None
-            # TODO Be careful with arbitrary Minkowski power!
-            self._centroid = (self.centroid * self.power + point) / (self.power + 1)
-        self.points_indices.append(point_index)
 
     @property
     def data(self):

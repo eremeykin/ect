@@ -5,8 +5,8 @@ from scipy.spatial.distance import minkowski
 from clustering.common import get_weights, minkowski_center, weighed_minkowski
 from clustering.cluster import Cluster
 
-class AnomalousPatternInitializationPBeta:
 
+class AnomalousPatternInitializationPBeta:
     def __init__(self, data, p, beta):
         self._data = data
         self._p = p
@@ -16,11 +16,12 @@ class AnomalousPatternInitializationPBeta:
         self._current_label = 0
         self._dim_rows = data.shape[0]
         self._dim_cols = data.shape[1]
-        self._anomal_cluster = AgglomerativeClusterPBeta(self._current_label, self._data, self._p, self._beta)
-        self._current_label+=1
+        self._anomalous_cluster = AgglomerativeClusterPBeta(self._current_label, self._data,
+                                                            self._p, self._beta)
+        self._origin_cluster = AgglomerativeClusterPBeta(self._current_label, self._data,
+                                                         self._p, self._beta)
+        self._current_label += 1
 
-    def tentative_centroid(self):
-        self._anomal_cluster = Cluster()
 
 
 def anomalous_cluster_p_beta(data, p, beta, tobj=None):
@@ -30,7 +31,6 @@ def anomalous_cluster_p_beta(data, p, beta, tobj=None):
     indices = np.arange(len(data))
     labels = np.zeros(len(data), dtype=int)
     V = data.shape[1]
-
 
     origin = minkowski_center(data, p)
 
