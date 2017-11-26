@@ -3,6 +3,13 @@ from clustering.cluster import Cluster
 from clustering.common import minkowski_center
 
 
+# class AgglomerativeCluster(Cluster):
+#
+#     def __init__(self, label, data):
+#         super().__init__(label, data)
+#
+#     def
+
 # TODO rename to AWard cluster
 class AgglomerativeCluster(Cluster):
     """Cluster for agglomerative clustering

@@ -44,9 +44,11 @@ class Cluster:
         return self._data
 
     def __hash__(self):
+        """Computes hash of cluster based on it's label only"""
         return hash(self.label)
 
     def __eq__(self, other):
+        """Compares clusters by it's label only"""
         return other.label == self.label
 
     def __str__(self):
@@ -58,4 +60,5 @@ class Cluster:
 
 
 class CentroidUndefined(BaseException):
+    """Exception that occurs when centroid of empty cluster is requested"""
     pass
