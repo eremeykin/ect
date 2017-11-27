@@ -3,7 +3,7 @@ from clustering.agglomerative.agglomerative_cluster import AWardPBetaCluster
 from itertools import count
 
 
-class APIpb:
+class APInitPB:
     """ Anomalous Pattern Initialization with p and beta parameters
     A reference paper: 'A-Ward p b : Effective hierarchical clustering using the Minkowski metric
     and a fast k -means initialisation)', see page 351,
@@ -19,15 +19,17 @@ class APIpb:
         self._label_counter = count()
         self._dim_rows = data.shape[0]
         self._dim_cols = data.shape[1]
-        self._origin_cluster = AWardPBetaCluster(next(self._label_counter), self._data, self._p, self._beta)
+        self._origin_cluster = AWardPBetaCluster(next(self._label_counter), self._data, self._p, self._beta, fixed_centroid=True)
 
     def _furthest_point_index(self, current_idata):
         dist_point_to_origin = np.apply_along_axis(
             func1d=lambda point: self._origin_cluster.centroid_to_point_distance(point),
             axis=1,
             arr=current_idata[:, 1:])
-        print('centroid={}, dst={}'.format(self._origin_cluster.centroid, dist_point_to_origin))
         return current_idata[:, 0][dist_point_to_origin.argmax()]
+
+    def _distance(self, point, centroid, weights):
+        return np.sum((weights ** self._beta) * np.abs(point - centroid) ** self._p)
 
     def __call__(self):
         current_idata = self._idata
@@ -41,15 +43,20 @@ class APIpb:
             normal_points_indices = []  # for safety
             anomalous_cluster.set_points_and_update(np.array([tentative_centroid_index]))
             while not anomalous_cluster.is_stable():
+                # dist_point_to_origin = np.apply_along_axis(
+                #     func1d=lambda point: self._origin_cluster.centroid_to_point_distance(point),
+                #     axis=1, arr=current_data)
 
                 dist_point_to_origin = np.apply_along_axis(
-                    func1d=lambda point: self._origin_cluster.centroid_to_point_distance(point),
+                    func1d=lambda point: self._distance(point, self._origin_cluster.centroid,
+                                                        anomalous_cluster._weights),
                     axis=1, arr=current_data)
                 dist_point_to_tentative_centroid = np.apply_along_axis(
                     func1d=lambda point: anomalous_cluster.centroid_to_point_distance(point),
                     axis=1, arr=current_data)
 
                 anomaly = dist_point_to_origin >= dist_point_to_tentative_centroid
+                # anomaly = dist_point_to_origin >= dist_point_to_tentative_centroid
                 anomalous_points_indices = current_index[anomaly]
                 normal_points_indices = current_index[~anomaly]
                 anomalous_cluster.set_points_and_update(anomalous_points_indices)  # step 3 and 4,5 inside update
@@ -57,8 +64,7 @@ class APIpb:
             self._clusters.append(anomalous_cluster)  # step 6
             current_idata = current_idata[~anomaly]
 
-
-        result = np.full(fill_value=0, shape=self._dim_rows)
+        result = np.full(fill_value=-1, shape=self._dim_rows)
         for c in range(0, len(self._clusters)):
             cluster = self._clusters[c]
             for index in cluster.points_indices:
@@ -70,6 +76,6 @@ if __name__ == "__main__":
     data = TestObject.load_data("ikmeans_test8.dat")
     tobj = TestObject('anomalous_cluster_p_beta')
     p, beta = 2, 2
-    run_anomalous_pattern_init = APIpb()
+    run_anomalous_pattern_init = APInitPB()
     labels, centroids, weights = anomalous_cluster_p_beta(data, p, beta, tobj=tobj)
     tobj.plot(data, labels, centroids=centroeids, prefix="RESULT")

@@ -105,8 +105,8 @@ class AWardPBetaCluster(AgglomerativeCluster):
         return self._is_stable
 
     def set_points_and_update(self, points_indices):
-        """Add points to the cluster and update it. The centroid will be updated only if
-        fix_centroid is set to False. Weights will be updated anyway.
+        """Add points to the cluster and update it. The centroid will be updated if
+        fix_centroid is set to False or centroid is None. Weights will be updated anyway.
 
         :param numpy.array points_indices: list of indices of points to add. Index is based on cluster data."""
         if len(points_indices) == 0 or set(self._points_indices) == set(points_indices):
@@ -114,12 +114,10 @@ class AWardPBetaCluster(AgglomerativeCluster):
             return
         self._points_indices = points_indices
         cluster_points = self._data[self._points_indices]
-        if not self._fixed_centroid:
+        if not self._fixed_centroid or self._centroid is None:
             # centroid update to the component-wise Minkowski centre of all points
             self._centroid = minkowski_center(cluster_points, self._p)
-        # weights update
-        # (as per 7 in "A-Ward p b : Effective hierarchical clustering using the
-        # Minkowski metric and a fast k -means initialisation)"
+        # weights update (as per 7)
         D = np.sum(np.abs(cluster_points - self.centroid) ** self._p, axis=0).astype(np.float64)
         denominator = (D * np.sum((np.float64(1.0) / D) ** (1 / (self._p - 1))))
         isnan = np.isnan(denominator)
@@ -134,9 +132,14 @@ class AWardPBetaCluster(AgglomerativeCluster):
     def centroid_to_point_distance(self, point):
         return np.sum((self._weights ** self._beta) * np.abs(point - self.centroid) ** self._p)
 
-    def merge(cluster1, cluster2, new_label):
+    def merge(self, cluster1, cluster2, new_label):
         raise NotImplemented("merge of AWardPBetaCluster is not implemented")
 
+    def __str__(self):
+        res = "AWard_pb Cluster #{}\n".format(self.label)
+        res += "centroid: {}\n".format(self.centroid)
+        res += "weights: {}\n".format(self._weights)
+        return res
 
 class WUndefined(BaseException):
     pass
