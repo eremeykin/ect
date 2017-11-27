@@ -43,20 +43,20 @@ class APInitPB:
             normal_points_indices = []  # for safety
             anomalous_cluster.set_points_and_update(np.array([tentative_centroid_index]))
             while not anomalous_cluster.is_stable():
-                # dist_point_to_origin = np.apply_along_axis(
-                #     func1d=lambda point: self._origin_cluster.centroid_to_point_distance(point),
-                #     axis=1, arr=current_data)
-
                 dist_point_to_origin = np.apply_along_axis(
-                    func1d=lambda point: self._distance(point, self._origin_cluster.centroid,
-                                                        anomalous_cluster._weights),
+                    func1d=lambda point: self._origin_cluster.centroid_to_point_distance(point),
                     axis=1, arr=current_data)
+
+                # dist_point_to_origin = np.apply_along_axis(
+                #     func1d=lambda point: self._distance(point, self._origin_cluster.centroid,
+                #                                         anomalous_cluster._weights),
+                #     axis=1, arr=current_data)
                 dist_point_to_tentative_centroid = np.apply_along_axis(
                     func1d=lambda point: anomalous_cluster.centroid_to_point_distance(point),
                     axis=1, arr=current_data)
 
-                anomaly = dist_point_to_origin >= dist_point_to_tentative_centroid
                 # anomaly = dist_point_to_origin >= dist_point_to_tentative_centroid
+                anomaly = dist_point_to_origin >= dist_point_to_tentative_centroid
                 anomalous_points_indices = current_index[anomaly]
                 normal_points_indices = current_index[~anomaly]
                 anomalous_cluster.set_points_and_update(anomalous_points_indices)  # step 3 and 4,5 inside update
