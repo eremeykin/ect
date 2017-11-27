@@ -1,16 +1,18 @@
 import numpy as np
 
+
 class Cluster:
     """Base immutable cluster
 
     :param int label: integer unique label of this cluster
     :param numpy.array data: of data on which the cluster is defined"""
+
     def __init__(self, label, data):
-        assert isinstance(label, int)
-        assert isinstance(data, np.ndarray)
+        if label is None:
+            raise BaseException("Wrong!")
         self._label = label
         self._data = data
-        self._points_indices = []
+        self._points_indices = np.empty((0,1), dtype=int) #np.array([], dtype=int)
         self._centroid = None
         self._dim_cols = data.shape[1]
 
@@ -21,7 +23,7 @@ class Cluster:
 
     @property
     def points_indices(self):
-        """List of points that are included in this cluster.
+        """numpy.array of points that are included in this cluster.
         By conventions each index points to one row of data of this cluster."""
         return self._points_indices
 
@@ -49,6 +51,8 @@ class Cluster:
 
     def __eq__(self, other):
         """Compares clusters by it's label only"""
+        if other is None:
+            return False
         return other.label == self.label
 
     def __str__(self):

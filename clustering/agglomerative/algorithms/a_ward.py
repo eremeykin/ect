@@ -1,7 +1,7 @@
 import numpy as np
 import sys
 from clustering.agglomerative.nearest_neighbor import NearestNeighborChain
-from clustering.agglomerative.agglomerative_cluster import AgglomerativeCluster
+from clustering.agglomerative.agglomerative_cluster import AWardCluster
 
 
 class AWard:
@@ -29,9 +29,9 @@ class AWard:
             # fill self.clusters with empty clusters if new label was reached
             # if curr_label < len(self.clusters) - 1, no empty clusters will be created
             for c in range(len(self._clusters), curr_label + 1):
-                new_cluster = AgglomerativeCluster(c, self.data)
+                new_cluster = AWardCluster(c, self.data)
                 self._clusters.append(new_cluster)
-            self._clusters[curr_label].add_point(i)
+            self._clusters[curr_label].add_point_and_update(i)
 
     def check_criterion(self, cluster1, cluster2, cluster):
         return (1 - self.alpha) * cluster.w < cluster1.w + cluster2.w

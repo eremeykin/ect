@@ -1,79 +1,75 @@
-import collections
-from clustering.agglomerative.agglomerative_cluster import AgglomerativeClusterPBeta
 import numpy as np
-from scipy.spatial.distance import minkowski
-from clustering.common import get_weights, minkowski_center, weighed_minkowski
-from clustering.cluster import Cluster
+from clustering.agglomerative.agglomerative_cluster import AWardPBetaCluster
+from itertools import count
 
 
-class AnomalousPatternInitializationPBeta:
+class APIpb:
+    """ Anomalous Pattern Initialization with p and beta parameters
+    A reference paper: 'A-Ward p b : Effective hierarchical clustering using the Minkowski metric
+    and a fast k -means initialisation)', see page 351,
+    algorithm Anomalous pattern initialisation for A-Ward p beta and imwk -means p beta"""
+
     def __init__(self, data, p, beta):
-        self._data = data
+        self._data = data.astype(object)
+        index = np.arange(len(data), dtype=int)[None].T
+        self._idata = np.hstack((index, self._data))  # data with index as first column
         self._p = p
         self._beta = beta
-        self._origin = minkowski_center(self._data, self._p)
         self._clusters = []
-        self._current_label = 0
+        self._label_counter = count()
         self._dim_rows = data.shape[0]
         self._dim_cols = data.shape[1]
-        self._anomalous_cluster = AgglomerativeClusterPBeta(self._current_label, self._data,
-                                                            self._p, self._beta)
-        self._origin_cluster = AgglomerativeClusterPBeta(self._current_label, self._data,
-                                                         self._p, self._beta)
-        self._current_label += 1
+        self._origin_cluster = AWardPBetaCluster(next(self._label_counter), self._data, self._p, self._beta)
+
+    def _furthest_point_index(self, current_idata):
+        dist_point_to_origin = np.apply_along_axis(
+            func1d=lambda point: self._origin_cluster.centroid_to_point_distance(point),
+            axis=1,
+            arr=current_idata[:, 1:])
+        print('centroid={}, dst={}'.format(self._origin_cluster.centroid, dist_point_to_origin))
+        return current_idata[:, 0][dist_point_to_origin.argmax()]
+
+    def __call__(self):
+        current_idata = self._idata
+        while len(current_idata) > 0:
+            current_index = current_idata[:, 0].astype(int)  # this is index of the points in initial data terms
+            current_data = current_idata[:, 1:]  # this is current, cropped data without index
+
+            self._origin_cluster.set_points_and_update(current_index)
+            tentative_centroid_index = self._furthest_point_index(current_idata)  # step 2
+            anomalous_cluster = AWardPBetaCluster(next(self._label_counter), self._data, self._p, self._beta)
+            normal_points_indices = []  # for safety
+            anomalous_cluster.set_points_and_update(np.array([tentative_centroid_index]))
+            while not anomalous_cluster.is_stable():
+
+                dist_point_to_origin = np.apply_along_axis(
+                    func1d=lambda point: self._origin_cluster.centroid_to_point_distance(point),
+                    axis=1, arr=current_data)
+                dist_point_to_tentative_centroid = np.apply_along_axis(
+                    func1d=lambda point: anomalous_cluster.centroid_to_point_distance(point),
+                    axis=1, arr=current_data)
+
+                anomaly = dist_point_to_origin >= dist_point_to_tentative_centroid
+                anomalous_points_indices = current_index[anomaly]
+                normal_points_indices = current_index[~anomaly]
+                anomalous_cluster.set_points_and_update(anomalous_points_indices)  # step 3 and 4,5 inside update
+                self._origin_cluster.set_points_and_update(normal_points_indices)
+            self._clusters.append(anomalous_cluster)  # step 6
+            current_idata = current_idata[~anomaly]
 
 
-
-def anomalous_cluster_p_beta(data, p, beta, tobj=None):
-    data_copy = np.copy(data)
-    centroids = []
-    weights = []
-    indices = np.arange(len(data))
-    labels = np.zeros(len(data), dtype=int)
-    V = data.shape[1]
-
-    origin = minkowski_center(data, p)
-
-    cluster_label = 0
-    while len(data) > 1:
-        x_to_origin = np.apply_along_axis(lambda x: minkowski(x, origin, p), axis=1, arr=data)
-        w = np.full(fill_value=1 / V, shape=V)
-        ct_index = np.argmax(x_to_origin)
-        ct = data[ct_index]
-        ct_queue = collections.deque([None, None, ct], maxlen=3)
-        anomaly = np.full(len(data), False, dtype=bool)
-        anomaly[ct_index] = True
-        tent_w = np.full(fill_value=1 / V, shape=V)
-        while not (np.array_equal(ct_queue[-1], ct_queue[-2]) or np.array_equal(ct_queue[-1], ct_queue[-3])):
-            # tobj.plot(data, labels[indices], centroids, show_num=False)
-            x_to_origin = np.apply_along_axis(lambda x: weighed_minkowski(x, origin, p, tent_w, beta), axis=1, arr=data)
-            x_to_ct = np.apply_along_axis(lambda x: weighed_minkowski(x, ct, p, tent_w, beta), axis=1, arr=data)
-            anomaly = x_to_ct < x_to_origin
-            # normalcy = ~anomaly
-            ct = minkowski_center(data[anomaly], p)
-            tent_w = get_weights(data[anomaly], ct, p)
-            ct_queue.append(ct)
-        normalcy = ~anomaly
-        centroids.append(ct)
-        # centroids = []
-        weights.append(w)
-        data = data[normalcy]
-        indices = indices[normalcy]
-        cluster_label += 1
-        labels[indices] = cluster_label
-    if len(data) > 0:
-        ct = minkowski_center(data, p)
-        centroids.append(ct)
-        weights.append(np.full(ct.shape, 1 / len(ct)))
-    # tobj.plot(data_copy, labels, show_num=False, prefix="RESULT")
-    return labels, np.array(centroids), np.array(weights)
+        result = np.full(fill_value=0, shape=self._dim_rows)
+        for c in range(0, len(self._clusters)):
+            cluster = self._clusters[c]
+            for index in cluster.points_indices:
+                result[index] = c
+        return np.array(result)
 
 
 if __name__ == "__main__":
-    from tests.tools.plot import TestObject
-
     data = TestObject.load_data("ikmeans_test8.dat")
     tobj = TestObject('anomalous_cluster_p_beta')
     p, beta = 2, 2
+    run_anomalous_pattern_init = APIpb()
     labels, centroids, weights = anomalous_cluster_p_beta(data, p, beta, tobj=tobj)
     tobj.plot(data, labels, centroids=centroeids, prefix="RESULT")

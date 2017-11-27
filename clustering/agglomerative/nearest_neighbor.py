@@ -1,5 +1,5 @@
 import numpy as np
-from clustering.agglomerative.agglomerative_cluster import AgglomerativeCluster
+from clustering.agglomerative.agglomerative_cluster import AgglomerativeCluster, AWardCluster
 
 
 class NearestNeighborChain:
@@ -50,7 +50,7 @@ class NearestNeighborChain:
                 self.merge_matrix = np.vstack((self.merge_matrix, np.array([top.label, nearest.label, label, dist])))
                 stack.remove(top)
                 stack.remove(nearest)
-                new_cluster = AgglomerativeCluster.merge(top, nearest, label)
+                new_cluster = AWardCluster.merge(top, nearest, label)
                 label += 1
                 self._clusters.append(new_cluster)
                 self._remaining_clusters.remove(top)
