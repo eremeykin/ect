@@ -1,4 +1,5 @@
-data = dlmread('/home/eremeykin/d_disk/projects/Clustering/ect/tests/api_p_beta/data/symmetric_15points.pts');
+%data = dlmread('/home/eremeykin/d_disk/projects/Clustering/ect/tests/api_p_beta/data/symmetric_15points.pts');
+data = dlmread('/home/eremeykin/d_disk/projects/Clustering/ect/tests/api_p_beta/data/iris.pts');
 ikThreshold = 0;
 p = 2;
 beta = 2;

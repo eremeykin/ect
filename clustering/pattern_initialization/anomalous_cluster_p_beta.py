@@ -1,6 +1,7 @@
 import numpy as np
 from clustering.agglomerative.agglomerative_cluster import AWardPBetaCluster
 from itertools import count
+from clustering.common import minkowski_center
 
 
 class APInitPB:
@@ -19,17 +20,18 @@ class APInitPB:
         self._label_counter = count()
         self._dim_rows = data.shape[0]
         self._dim_cols = data.shape[1]
-        self._origin_cluster = AWardPBetaCluster(next(self._label_counter), self._data, self._p, self._beta, fixed_centroid=True)
+        self._origin = minkowski_center(self._data, self._p)
+        # self._origin_cluster = AWardPBetaCluster(next(self._label_counter), self._data, self._p, self._beta)
 
     def _furthest_point_index(self, current_idata):
+        equal_weights = np.ones(shape=(self._dim_cols,))/self._dim_cols
+
         dist_point_to_origin = np.apply_along_axis(
-            func1d=lambda point: self._origin_cluster.centroid_to_point_distance(point),
+            func1d=lambda point: AWardPBetaCluster.distance_formula(
+                point, self._origin, equal_weights, self._p, self._beta),
             axis=1,
             arr=current_idata[:, 1:])
         return current_idata[:, 0][dist_point_to_origin.argmax()]
-
-    def _distance(self, point, centroid, weights):
-        return np.sum((weights ** self._beta) * np.abs(point - centroid) ** self._p)
 
     def __call__(self):
         current_idata = self._idata
@@ -37,30 +39,21 @@ class APInitPB:
             current_index = current_idata[:, 0].astype(int)  # this is index of the points in initial data terms
             current_data = current_idata[:, 1:]  # this is current, cropped data without index
 
-            self._origin_cluster.set_points_and_update(current_index)
             tentative_centroid_index = self._furthest_point_index(current_idata)  # step 2
             anomalous_cluster = AWardPBetaCluster(next(self._label_counter), self._data, self._p, self._beta)
-            normal_points_indices = []  # for safety
             anomalous_cluster.set_points_and_update(np.array([tentative_centroid_index]))
             while not anomalous_cluster.is_stable():
                 dist_point_to_origin = np.apply_along_axis(
-                    func1d=lambda point: self._origin_cluster.centroid_to_point_distance(point),
+                    func1d=lambda point: anomalous_cluster.distance(point, self._origin),
                     axis=1, arr=current_data)
 
-                # dist_point_to_origin = np.apply_along_axis(
-                #     func1d=lambda point: self._distance(point, self._origin_cluster.centroid,
-                #                                         anomalous_cluster._weights),
-                #     axis=1, arr=current_data)
                 dist_point_to_tentative_centroid = np.apply_along_axis(
-                    func1d=lambda point: anomalous_cluster.centroid_to_point_distance(point),
+                    func1d=lambda point: anomalous_cluster.distance(point),
                     axis=1, arr=current_data)
 
-                # anomaly = dist_point_to_origin >= dist_point_to_tentative_centroid
                 anomaly = dist_point_to_origin >= dist_point_to_tentative_centroid
                 anomalous_points_indices = current_index[anomaly]
-                normal_points_indices = current_index[~anomaly]
                 anomalous_cluster.set_points_and_update(anomalous_points_indices)  # step 3 and 4,5 inside update
-                self._origin_cluster.set_points_and_update(normal_points_indices)
             self._clusters.append(anomalous_cluster)  # step 6
             current_idata = current_idata[~anomaly]
 
