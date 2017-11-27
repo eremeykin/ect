@@ -21,7 +21,7 @@ class APInitPB:
         self._dim_rows = data.shape[0]
         self._dim_cols = data.shape[1]
         self._origin = minkowski_center(self._data, self._p)
-        # self._origin_cluster = AWardPBetaCluster(next(self._label_counter), self._data, self._p, self._beta)
+
 
     def _furthest_point_index(self, current_idata):
         equal_weights = np.ones(shape=(self._dim_cols,))/self._dim_cols
@@ -43,15 +43,16 @@ class APInitPB:
             anomalous_cluster = AWardPBetaCluster(next(self._label_counter), self._data, self._p, self._beta)
             anomalous_cluster.set_points_and_update(np.array([tentative_centroid_index]))
             while not anomalous_cluster.is_stable():
+
                 dist_point_to_origin = np.apply_along_axis(
                     func1d=lambda point: anomalous_cluster.distance(point, self._origin),
                     axis=1, arr=current_data)
 
-                dist_point_to_tentative_centroid = np.apply_along_axis(
+                dist_point_to_anomalous_centroid = np.apply_along_axis(
                     func1d=lambda point: anomalous_cluster.distance(point),
                     axis=1, arr=current_data)
 
-                anomaly = dist_point_to_origin >= dist_point_to_tentative_centroid
+                anomaly = dist_point_to_origin >= dist_point_to_anomalous_centroid
                 anomalous_points_indices = current_index[anomaly]
                 anomalous_cluster.set_points_and_update(anomalous_points_indices)  # step 3 and 4,5 inside update
             self._clusters.append(anomalous_cluster)  # step 6
