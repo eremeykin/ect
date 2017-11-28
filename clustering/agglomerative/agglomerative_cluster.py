@@ -2,6 +2,7 @@ import numpy as np
 from abc import ABC, abstractmethod
 from clustering.cluster import Cluster
 from clustering.common import minkowski_center
+from scipy.spatial.distance import sqeuclidean as se_dist
 
 
 class AgglomerativeCluster(ABC, Cluster):
@@ -15,8 +16,7 @@ class AgglomerativeCluster(ABC, Cluster):
 
 
 class AWardCluster(AgglomerativeCluster):
-    """Cluster for A-Ward agglomerative clustering. The add_point method changes the object of
-    this class.
+    """Cluster for A-Ward agglomerative clustering.
 
     :param int label: integer unique label of this cluster
     :param numpy.array data: of data on which the cluster is defined"""
@@ -24,6 +24,30 @@ class AWardCluster(AgglomerativeCluster):
     def __init__(self, label, data):
         super().__init__(label, data)
         self._w = None
+        self._is_stable = False
+
+    def set_points_and_update(self, points_indices):
+        """Add points to the cluster and update it.
+
+        :param numpy.array points_indices: list of indices of points to add. Index is based on cluster data."""
+        if len(points_indices) == 0 or set(self._points_indices) == set(points_indices):
+            self._is_stable = True
+            return
+        self._points_indices = points_indices
+        cluster_points = self._data[self._points_indices]
+        # centroid update to the component-wise mean
+        self._centroid = np.mean(cluster_points, axis=0)
+        # weights update (as per 7)
+        assert self._centroid.shape == (self._dim_cols,)
+
+    @property
+    def is_stable(self):
+        return self.is_stable
+
+    def distance(self, point1, point2=None):
+        if point2 is None:
+            point2 = self.centroid
+        return se_dist(point1, point2)
 
     @staticmethod
     def merge(cluster1, cluster2, new_label):
@@ -99,6 +123,7 @@ class AWardPBetaCluster(AgglomerativeCluster):
         if weights is None:
             self._weights = np.full(shape=(1, self._dim_cols), fill_value=1 / self._dim_cols)
 
+    @property
     def is_stable(self):
         return self._is_stable
 
