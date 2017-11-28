@@ -3,7 +3,6 @@ import numpy as np
 from clustering.pattern_initialization.ap_init import APInit
 from tests.tools import transformation_exists
 
-
 DATA_DIR = "/home/eremeykin/d_disk/projects/Clustering/ect/tests/shared/data/"
 
 
@@ -17,6 +16,14 @@ def test_symmetric_16points():
 
 def test_iris():
     data = np.loadtxt('{}iris.pts'.format(DATA_DIR))
+    run_ap_init = APInit(data)
+    result = run_ap_init()
+    actual, _ = _naive_ap_init(data)
+    assert transformation_exists(actual, result)
+
+
+def test_500_random():
+    data = np.loadtxt('{}data500ws.pts'.format(DATA_DIR))
     run_ap_init = APInit(data)
     result = run_ap_init()
     actual, _ = _naive_ap_init(data)

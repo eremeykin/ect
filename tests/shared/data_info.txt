@@ -1,0 +1,3 @@
+data500ws           [500x6] --- random generated data set with well separated clusters
+iris                [150x4] --- classical iris data set with 3 clusters. First 50 is 0, second fifty is 1, and third is 2
+symmetric_15points  [15x2]  --- sample data set that are symmetrical relative to 0
