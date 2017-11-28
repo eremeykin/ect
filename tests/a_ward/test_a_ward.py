@@ -25,6 +25,7 @@ def test_iris():
     actual = model.labels_
     assert transformation_exists(actual, result)
 
+
 def test_500_random():
     data = np.loadtxt('{}data500ws.pts'.format(DATA_DIR))
     run_a_ward = AWard(data, np.arange(0, len(data), dtype=int), 3)
