@@ -11,27 +11,29 @@ class AWard:
     :param int k_star: number of clusters to obtain (optional).
     :param float alpha: parameter of stop criteria (optional). If not specified, k_star is used to stop."""
 
-    def __init__(self, data, labels, k_star=None, alpha=None):
-        self.data = data
-        self.labels = labels
+    def __init__(self, clusters, k_star=None, alpha=None):
         self.k_star = k_star
         self.alpha = alpha
-        self._dim_rows = data.shape[0]
-        self._dim_cols = data.shape[1]
-        self._clusters = []
+        self._dim_rows = sum((cluster.power for cluster in clusters))
+        self._clusters = clusters
 
-    def _init_clusters(self):
-        if self.labels is None:
-            self.labels = np.arange(0, len(data), 1)
+    @classmethod
+    def from_labels(cls, data, labels, k_star=None, alpha=None):
+        # init self._clusters
+        clusters = []
+        dim_rows = data.shape[0]
+        if labels is None:
+            labels = np.arange(0, len(data), 1)
         # create cluster structure according given labels
-        for i in range(0, self._dim_rows):
-            curr_label = self.labels[i]
+        for i in range(0, dim_rows):
+            curr_label = labels[i]
             # fill self.clusters with empty clusters if new label was reached
             # if curr_label < len(self.clusters) - 1, no empty clusters will be created
-            for c in range(len(self._clusters), curr_label + 1):
-                new_cluster = AWardCluster(c, self.data)
-                self._clusters.append(new_cluster)
-            self._clusters[curr_label].add_point_and_update(i)
+            for c in range(len(clusters), curr_label + 1):
+                new_cluster = AWardCluster(c, data)
+                clusters.append(new_cluster)
+            clusters[curr_label].add_point_and_update(i)
+        return cls(clusters, k_star, alpha)
 
     def check_criterion(self, cluster1, cluster2, cluster):
         return (1 - self.alpha) * cluster.w < cluster1.w + cluster2.w
@@ -53,7 +55,7 @@ class AWard:
         """Run AWard clustering.
 
         :returns list of resulting clusters."""
-        self._init_clusters()
+
         run_nnc = NearestNeighborChain(self._clusters)
         self._clusters, self.merge_matrix = run_nnc()
         # find position where we had to stop according selected criterion: k_star or by formula 8

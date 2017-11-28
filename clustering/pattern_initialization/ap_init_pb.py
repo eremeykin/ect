@@ -1,7 +1,6 @@
 import numpy as np
 from clustering.agglomerative.agglomerative_cluster import AWardPBetaCluster
 from clustering.pattern_initialization.abstr_ap_init import AbstractAPInit
-from itertools import count
 from clustering.common import minkowski_center
 
 
