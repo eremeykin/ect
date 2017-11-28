@@ -1,7 +1,5 @@
 import numpy as np
-from clustering.agglomerative.agglomerative_cluster import AWardPBetaCluster
 from itertools import count
-from clustering.common import minkowski_center
 from abc import ABC, abstractmethod
 
 
@@ -27,6 +25,7 @@ class AbstractAPInit(ABC):
 
     @abstractmethod
     def _calculate_origin(self):
+        """Calculates origin according to algorithm logic"""
         pass
 
     @abstractmethod
@@ -48,6 +47,7 @@ class AbstractAPInit(ABC):
         return current_idata[relative_index][0], relative_index
 
     def _result_array(self):
+        """Return result labels array based on accumulated clusters array"""
         result = np.full(fill_value=-1, shape=self._dim_rows)
         for c in range(0, len(self._clusters)):
             cluster = self._clusters[c]
