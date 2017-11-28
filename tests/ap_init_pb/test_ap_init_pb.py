@@ -5,6 +5,7 @@ from tests.tools import transformation_exists
 
 DATA_DIR = "/home/eremeykin/d_disk/projects/Clustering/ect/tests/shared/data/"
 
+
 def test_symmetric_16points():
     data = np.loadtxt('{}symmetric_15points.pts'.format(DATA_DIR))
     run_api_p_beta = APInitPB(data, p=5, beta=5)
