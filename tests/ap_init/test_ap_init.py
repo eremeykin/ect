@@ -1,12 +1,30 @@
 import numpy as np
 
-from scipy.spatial.distance import sqeuclidean as se_dist
+from clustering.pattern_initialization.ap_init import APInit
+from tests.tools import transformation_exists
 
 
-def anomalous_cluster(data, tobj=None):
-    # from tests.tools.plot import TestObject
-    # tobj = TestObject()
-    data_copy = np.copy(data)
+DATA_DIR = "/home/eremeykin/d_disk/projects/Clustering/ect/tests/shared/data/"
+
+
+def test_symmetric_16points():
+    data = np.loadtxt('{}symmetric_15points.pts'.format(DATA_DIR))
+    run_ap_init = APInit(data)
+    result = run_ap_init()
+    actual = np.loadtxt('{}symmetric_15points.lbs'.format(DATA_DIR), dtype=int)
+    assert transformation_exists(actual, result)
+
+
+def test_iris():
+    data = np.loadtxt('{}iris.pts'.format(DATA_DIR))
+    run_ap_init = APInit(data)
+    result = run_ap_init()
+    actual, _ = _naive_ap_init(data)
+    assert transformation_exists(actual, result)
+
+
+def _naive_ap_init(data):
+    from scipy.spatial.distance import sqeuclidean as se_dist
     centroids = []
     indices = np.arange(len(data))
     labels = np.zeros(len(data), dtype=int)
@@ -26,7 +44,6 @@ def anomalous_cluster(data, tobj=None):
             x_to_ct = np.apply_along_axis(lambda x: se_dist(x, ct), axis=1, arr=data)
             anomaly = x_to_ct < x_to_origin
             ct = np.mean(data[anomaly], 0)
-        if tobj is not None: tobj.plot(data, labels[[indices]], prefix=str(cluster_label), show_num=False)
         normalcy = ~anomaly
         centroids.append(ct)
         data = data[normalcy]
@@ -36,15 +53,4 @@ def anomalous_cluster(data, tobj=None):
         labels[indices] = cluster_label
     if len(data) > 0:
         centroids.append(data[0])
-    if tobj is not None: tobj.plot(data_copy, labels, prefix="RES", show_num=False)
     return labels, np.array(centroids)
-
-
-if __name__ == "__main__":
-    from tests.tools.plot import TestObject
-
-    # data = np.loadtxt("../../tests/data/ikmeans_test8.dat")
-    data = np.loadtxt("/home/eremeykin/PycharmProjects/ectgui/gen_data_2.csv")
-    data = data[:, :2]
-    tobj = TestObject('anomalous_cluster')
-    labels, centroids = anomalous_cluster(data, tobj=tobj)

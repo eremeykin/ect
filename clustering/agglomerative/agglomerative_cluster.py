@@ -42,7 +42,7 @@ class AWardCluster(AgglomerativeCluster):
 
     @property
     def is_stable(self):
-        return self.is_stable
+        return self._is_stable
 
     def distance(self, point1, point2=None):
         if point2 is None:
