@@ -26,8 +26,8 @@ def test_500_random():
     data = np.loadtxt('{}data500ws.pts'.format(DATA_DIR))
     run_ap_init = APInit(data)
     result = run_ap_init()
-    actual, _ = _naive_ap_init(data)
-    assert transformation_exists(actual, result)
+    naive_result, _ = _naive_ap_init(data)
+    assert transformation_exists(naive_result, result)
 
 
 def _naive_ap_init(data):

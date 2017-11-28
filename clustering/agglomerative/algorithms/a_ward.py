@@ -67,14 +67,10 @@ class AWard:
                 result_clusters.append(self._clusters[int(current_cluster)])
             pointer -= 1
         result = np.full(fill_value=0, shape=self._dim_rows)
+
         for c in range(0, len(result_clusters)):
             cluster = result_clusters[c]
-            for index in cluster.points_indices:
-                result[index] = c
-        # TODO check the code below. don't know what is it
-        u = np.unique(result)
-        d = dict(zip(np.unique(u), np.arange(0, len(u))))
-        result = [d[x] for x in result]
+            result[cluster.points_indices] = c
         return np.array(result)
 
 

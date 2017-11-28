@@ -103,7 +103,6 @@ class AWardCluster(AgglomerativeCluster):
         return distance
 
 
-# TODO think about something like factory
 class AWardPBetaCluster(AgglomerativeCluster):
     """Cluster for A-Ward agglomerative clustering with p and beta parameters
     """
