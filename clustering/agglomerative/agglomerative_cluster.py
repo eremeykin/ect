@@ -139,7 +139,8 @@ class AWardPBetaCluster(AgglomerativeCluster):
         self._centroid = minkowski_center(cluster_points, self._p)
         # weights update (as per 7)
         D = np.sum(np.abs(cluster_points - self.centroid) ** self._p, axis=0).astype(np.float64)
-        denominator = ((D ** (1 / (self._p - 1))) * np.sum((np.float64(1.0) / D) ** (1 / (self._p - 1))))
+        with np.errstate(divide='ignore', invalid='ignore'):
+            denominator = ((D ** (1 / (self._p - 1))) * np.sum((np.float64(1.0) / D) ** (1 / (self._p - 1))))
         isnan = np.isnan(denominator)
         if np.any(isnan):
             self._weights = isnan.astype(int) / np.sum(isnan)
@@ -179,3 +180,5 @@ class EqualClustersMergeException(BaseException):
 
 class DifferentDataMergeException(BaseException):
     pass
+
+

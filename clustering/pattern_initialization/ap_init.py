@@ -1,14 +1,10 @@
 import numpy as np
 from scipy.spatial.distance import sqeuclidean as se_dist
 from clustering.agglomerative.agglomerative_cluster import AWardCluster
-from clustering.pattern_initialization.abstract_ap_init import AbstractAPInit
+from clustering.pattern_initialization.abstr_ap_init import AbstractAPInit
 
 
 class APInit(AbstractAPInit):
-    class APInitClusterFactory(AbstractAPInit.AbstractClusterFactory):
-        def new(self, label, data):
-            return AWardCluster(label, data)
-
     def __init__(self, data):
         super().__init__(data)
 
@@ -22,5 +18,5 @@ class APInit(AbstractAPInit):
             arr=current_idata[:, 1:])
         return dist_point_to_origin.argmax()
 
-    def _get_cluster_factory(self):
-        return APInit.APInitClusterFactory()
+    def _new_cluster(self, label, data):
+        return AWardCluster(label, data)

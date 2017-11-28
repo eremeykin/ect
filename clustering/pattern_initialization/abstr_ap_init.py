@@ -5,13 +5,6 @@ from abc import ABC, abstractmethod
 
 class AbstractAPInit(ABC):
 
-    class AbstractClusterFactory(ABC):
-
-        @abstractmethod
-        def new(self, label, data):
-            """Returns a new cluster with given label and based of specified data."""
-            pass
-
     def __init__(self, data):
         self._data = data.astype(object)  # TODO think about something more elegant
         index = np.arange(len(data), dtype=int)[None].T
@@ -21,7 +14,11 @@ class AbstractAPInit(ABC):
         self._dim_rows = data.shape[0]
         self._dim_cols = data.shape[1]
         self._origin = self._calculate_origin()
-        self._cluster_factory = self._get_cluster_factory()
+
+    @abstractmethod
+    def _new_cluster(self, label, data):
+        """Creates a new cluster with label and based on specified  data"""
+        pass
 
     @abstractmethod
     def _calculate_origin(self):
@@ -32,11 +29,6 @@ class AbstractAPInit(ABC):
     def _furthest_point_relative_index(self, current_idata):
         """Gets current data with index as first column and calculate furthest point relative index
         i.e. index in current_idata"""
-        pass
-
-    @abstractmethod
-    def _get_cluster_factory(self):
-        """Returns a ClusterFactory to make clusters from label and data with new method"""
         pass
 
     def _furthest_point_index(self, current_idata):
@@ -61,7 +53,7 @@ class AbstractAPInit(ABC):
             current_data = current_idata[:, 1:]  # this is current, cropped data without index
             # step 2
             tentative_centroid_index, tentative_centroid_relative_index = self._furthest_point_index(current_idata)
-            anomalous_cluster = self._cluster_factory.new(next(self._label_counter), self._data)
+            anomalous_cluster = self._new_cluster(next(self._label_counter), self._data)
             anomalous_cluster.set_points_and_update(np.array([tentative_centroid_index]))
             anomaly = np.full(shape=current_idata.shape, fill_value=False, dtype=bool)
             anomaly[tentative_centroid_relative_index] = True
