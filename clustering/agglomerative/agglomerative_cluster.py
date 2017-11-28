@@ -37,6 +37,8 @@ class AWardCluster(AgglomerativeCluster):
         cluster_points = self._data[self._points_indices]
         # centroid update to the component-wise mean
         self._centroid = np.mean(cluster_points, axis=0)
+        # Special property of cluster calculated as sum of square euclidean distance from each point to centroid
+        self._w = np.sum((cluster_points - self.centroid)**2)
         # weights update (as per 7)
         assert self._centroid.shape == (self._dim_cols,)
 
@@ -76,7 +78,7 @@ class AWardCluster(AgglomerativeCluster):
     @property
     def w(self):
         if self._w is None:
-            raise WUndefined("w is undefined for an empty cluster: {}" % self)
+            raise WUndefined("w is undefined for an empty cluster: {}" .format(self))
         return self._w
 
     def add_point_and_update(self, point_index):

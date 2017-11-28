@@ -20,19 +20,17 @@ class AWard:
     @classmethod
     def from_labels(cls, data, labels, k_star=None, alpha=None):
         # init self._clusters
+        index = np.arange(len(data), dtype=int)
+
         clusters = []
         dim_rows = data.shape[0]
         if labels is None:
             labels = np.arange(0, len(data), 1)
         # create cluster structure according given labels
-        for i in range(0, dim_rows):
-            curr_label = labels[i]
-            # fill self.clusters with empty clusters if new label was reached
-            # if curr_label < len(self.clusters) - 1, no empty clusters will be created
-            for c in range(len(clusters), curr_label + 1):
-                new_cluster = AWardCluster(c, data)
-                clusters.append(new_cluster)
-            clusters[curr_label].add_point_and_update(i)
+        for cluster_label in np.unique(labels):
+            new_cluster = AWardCluster(cluster_label, data)
+            new_cluster.set_points_and_update(index[labels == cluster_label])
+            clusters.append(new_cluster)
         return cls(clusters, k_star, alpha)
 
     def check_criterion(self, cluster1, cluster2, cluster):
@@ -79,6 +77,7 @@ class AWard:
 def a_ward(data, k_star=None, labels=None):
     run_award = AWard(data, labels, k_star)
     return run_award()
+
 
 sys.argv += ["/home/eremeykin/d_disk/projects/Clustering/utils/data/data10ws.pts"]
 sys.argv += ["/home/eremeykin/d_disk/projects/Clustering/utils/labels/data10ws.lbs"]
