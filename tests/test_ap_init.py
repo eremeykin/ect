@@ -4,6 +4,8 @@ from clustering.pattern_initialization.ap_init import APInit
 from tests.tools import transformation_exists
 from tests.parameters import DATA_DIR
 
+
+
 def test_symmetric_15points():
     data = np.loadtxt('{}symmetric_15points.pts'.format(DATA_DIR))
     run_ap_init = APInit(data)

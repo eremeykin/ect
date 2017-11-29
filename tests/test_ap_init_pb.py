@@ -2,9 +2,11 @@ from clustering.pattern_initialization.ap_init_pb import APInitPB
 from tests.tools import transformation_exists
 import collections
 import numpy as np
+import os
 from scipy.spatial.distance import minkowski
 from clustering.common import get_weights, minkowski_center, weighed_minkowski
 from tests.parameters import DATA_DIR
+from tests.tools import matlab_connector
 
 
 def test_symmetric_15points():
@@ -13,7 +15,7 @@ def test_symmetric_15points():
     run_api_p_beta = APInitPB(data, p=beta, beta=beta)
     result = run_api_p_beta()
     actual = np.loadtxt('{}symmetric_15points.lbs'.format(DATA_DIR), dtype=int)
-    naive_result, c, w = anomalous_cluster_p_beta(data, p=2, beta=2)
+    naive_result, c, w = _naive_ap_init_pb(data, p=2, beta=2)
     assert transformation_exists(actual, result)
     assert transformation_exists(naive_result, result)
 
@@ -23,7 +25,7 @@ def test_iris():
     data = np.loadtxt('{}iris.pts'.format(DATA_DIR))
     run_api_p_beta = APInitPB(data, p=p, beta=beta)
     result = run_api_p_beta()
-    naive_result, c, w = anomalous_cluster_p_beta(data, p=p, beta=beta)
+    naive_result, c, w = _naive_ap_init_pb(data, p=p, beta=beta)
     assert transformation_exists(naive_result, result)
 
 
@@ -32,11 +34,36 @@ def test_500_random():
     data = np.loadtxt('{}data500ws.pts'.format(DATA_DIR))
     run_api_p_beta = APInitPB(data, p=p, beta=beta)
     result = run_api_p_beta()
-    naive_result, c, w = anomalous_cluster_p_beta(data, p=p, beta=beta)
+    naive_result, c, w = _naive_ap_init_pb(data, p=p, beta=beta)
     assert transformation_exists(naive_result, result)
 
 
-def anomalous_cluster_p_beta(data, p, beta):
+def test_iris_matlab():
+    p, beta = 2, 2
+    threshold = 0
+    data_path = '{}iris.pts'.format(DATA_DIR)
+    data = np.loadtxt(data_path)
+    run_api_p_beta = APInitPB(data, p=p, beta=beta)
+    result = run_api_p_beta()
+    data_file = "'" + os.path.abspath(data_path) + "'"
+    matlab_result = matlab_connector('test_ap_init_pb', data_file, threshold, p, beta)
+    matlab_result = [int(i) for i in matlab_result]
+    assert transformation_exists(matlab_result, result)
+
+
+def test_symmetric_15points_matlab():
+    p, beta = 2, 2
+    threshold = 0
+    data_path = '{}symmetric_15points.pts'.format(DATA_DIR)
+    data = np.loadtxt(data_path)
+    run_api_p_beta = APInitPB(data, p=p, beta=beta)
+    result = run_api_p_beta()
+    data_file = "'" + os.path.abspath(data_path) + "'"
+    matlab_result = matlab_connector('test_ap_init_pb', data_file, threshold, p, beta)
+    matlab_result = [int(i) for i in matlab_result]
+    assert transformation_exists(matlab_result, result)
+
+def _naive_ap_init_pb(data, p, beta):
     data_copy = np.copy(data)
     centroids = []
     weights = []

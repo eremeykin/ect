@@ -168,7 +168,7 @@ end
 end
 
 
-function [U, FinalW, InitW, FinalZ, InitZ, UDistToZ,LoopCount] = iMWKmeans(Data, ikThreshold, p, beta, MaxK)
+function [U, FinalW, InitW, FinalZ, InitZ, UDistToZ,LoopCount, AnomalousLabels] = iMWKmeans(Data, ikThreshold, p, beta, MaxK)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %intelligent Minkowski Weighted K-Means
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -221,11 +221,18 @@ OnesIndex=ones(Initial_Size_Data,1);
 [~, index]= sort(MinkDist(Data, MinkCentre(OnesIndex,:), p, EqualWeights.^beta,OnesIndex)); 
 Data = Data(index,:);
 
+DataLen = size(Data, 1);
+Lables = zeros(DataLen,1);
+Index = [1:1:DataLen]';
+IData = cat(2, Index, Data);
+IData = IData(index,:);
+
+CurrentLabel = 0;
 %Third Step Anomalous Patter
 while ~isempty (Data)
     DataSize = size(Data,1);
     OnesIndex=ones(DataSize,1);
-    TentCentroid = Data(DataSize,:); % Gets a tentative Centroid    
+    TentCentroid = Data(DataSize,:); % Gets a tentative Centroid
     PreviousBelongsToCentroid=[];
     PreviousPreviousBelongsToCentroid=[];
     TentW=EqualWeights;
@@ -234,6 +241,7 @@ while ~isempty (Data)
         %BelongsToCentroid(x,1) = True, if x is closer to the tentative
         %centroid than it is to the Minkowski Centre of the data
         BelongsToCentroid = MinkDist(Data, TentCentroid(OnesIndex,:), p, TentW.^beta,OnesIndex) < MinkDist(Data, MinkCentre(OnesIndex,:), p, TentW.^beta,OnesIndex);
+        
         NewCentroid(1,:)=New_cmt(Data(BelongsToCentroid==1,:),p);
         if sum(BelongsToCentroid)==0,BelongsToCentroid(size(Data,1),1)=1;end;
         
@@ -254,8 +262,12 @@ while ~isempty (Data)
         Centroids = [Centroids; NewCentroid]; %#ok<AGROW>
         Weights = [Weights; TentW]; %#ok<AGROW>    
         QtdInCluster = [QtdInCluster; sum(BelongsToCentroid)]; %#ok<AGROW>
+        %NewCluster = sort(IData(BelongsToCentroid==1,1)) -1;
+        Labels(IData(BelongsToCentroid==1,1)) = CurrentLabel;
+        CurrentLabel = CurrentLabel + 1;
     end
     Data(BelongsToCentroid==1,:)=[];
+    IData(BelongsToCentroid==1,:)=[];
 end
 
 if exist('MaxK','var')
@@ -268,9 +280,10 @@ end
 
 InitW=Weights;
 InitZ=Centroids;
+AnomalousLabels = Labels';
 
 %Runs MWK-Means if the found initial values
-[U, FinalW, FinalZ, UDistToZ, LoopCount] = MWKmeans(InitialData, size(Centroids,1), p, beta, Centroids, Weights);
+[U, FinalW, FinalZ, UDistToZ, LoopCount, ] = MWKmeans(InitialData, size(Centroids,1), p, beta, Centroids, Weights);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

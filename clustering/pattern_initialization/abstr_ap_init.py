@@ -4,6 +4,9 @@ from abc import ABC, abstractmethod
 
 
 class AbstractAPInit(ABC):
+
+    _MAX_LOOPS = 500
+
     def __init__(self, data):
         self._data = data.astype(object)  # TODO think about something more elegant
         index = np.arange(len(data), dtype=int)[None].T
@@ -64,7 +67,7 @@ class AbstractAPInit(ABC):
             anomalous_cluster.set_points_and_update(np.array([tentative_centroid_index]))
             anomaly = np.full(shape=current_idata.shape, fill_value=False, dtype=bool)
             anomaly[tentative_centroid_relative_index] = True
-            while not anomalous_cluster.is_stable:
+            for loop_control in range(AbstractAPInit._MAX_LOOPS):
                 dist_point_to_origin = np.apply_along_axis(
                     func1d=lambda point: anomalous_cluster.distance(point, self._origin),
                     axis=1, arr=current_data)
@@ -76,6 +79,8 @@ class AbstractAPInit(ABC):
                 anomaly = dist_point_to_origin >= dist_point_to_anomalous_centroid
                 anomalous_points_indices = current_index[anomaly]
                 anomalous_cluster.set_points_and_update(anomalous_points_indices)  # step 3 and 4,5 inside update
+                if anomalous_cluster.is_stable:
+                    break
             self._clusters.append(anomalous_cluster)  # step 6
             current_idata = current_idata[~anomaly]
         self._completed = True

@@ -97,6 +97,8 @@ class AWardPBCluster(AgglomerativeCluster):
         self._beta = beta
         if weights is None:
             self._weights = np.full(shape=(1, self._dim_cols), fill_value=1 / self._dim_cols)
+        else:
+            raise BaseException("Are you sure what are you doing?")
 
     def _update(self):
         """Updates cluster centroid and weights"""
