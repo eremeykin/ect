@@ -43,6 +43,7 @@ class _TestAWardPBCluster(AWardPBCluster):
 
 class _TestAPInitPB(APInitPB):
     """Do not use it. Special implementation of APInitPB for testing purposes only."""
+
     def _new_cluster(self, label, data):
         return _TestAWardPBCluster(label, data, self._p, self._beta)
 
@@ -81,12 +82,18 @@ def test_iris_matlab():
     threshold = 0
     data_path = '{}iris.pts'.format(DATA_DIR)
     data = np.loadtxt(data_path)
-    run_api_p_beta = APInitPB(data, p=p, beta=beta)
+    run_api_p_beta = _TestAPInitPB(data, p=p, beta=beta)
     result = run_api_p_beta()
     data_file = "'" + os.path.abspath(data_path) + "'"
     matlab_result = matlab_connector('test_ap_init_pb', data_file, threshold, p, beta)
-    matlab_result = [int(i) for i in matlab_result]
-    assert transformation_exists(matlab_result, result)
+    matlab_labels = matlab_result['AnomalousLabels'].flatten().astype(int)
+    matlab_weights = matlab_result['InitW']
+    matlab_centroids = matlab_result['InitZ']
+    my_weights = np.array([c._weights for c in run_api_p_beta.clusters])
+    my_centroids = np.array([c.centroid for c in run_api_p_beta.clusters]).astype(float)
+    assert np.allclose(my_weights, matlab_weights, atol=1.e-5)
+    assert np.allclose(my_centroids, matlab_centroids, atol=1.e-5)
+    assert transformation_exists(matlab_labels, result)
 
 
 def test_symmetric_15points_matlab():

@@ -4,13 +4,16 @@ from clustering.ik_means.imwk_means_pb import IMWKMeansPB
 from tests.parameters import DATA_DIR
 import numpy as np
 from sklearn.cluster import KMeans as sklearnKMeans
-from tests.tools import transformation_exists
+from tests.tools import transformation_exists, matlab_connector
+from tests.test_ap_init_pb import _TestAPInitPB, _TestAWardPBCluster
+import os
 
-# ref_array = [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-#               2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 4, 3, 7, 3, 4, 3, 7, 4, 5, 4, 3, 7, 3, 3, 7, 5, 4,
-#               6, 5, 6, 3, 5, 3, 3, 3, 3, 4, 4, 4, 7, 6, 3, 3, 3, 5, 7, 7, 7, 3, 7, 4, 7, 7, 7, 5, 4, 7, 1, 6, 1, 1, 1,
-#               1, 3, 1, 1, 1, 1, 6, 1, 6, 6, 1, 1, 1, 1, 6, 1, 6, 1, 6, 1, 1, 6, 6, 1, 1, 1, 1, 1, 6, 6, 1, 1, 1, 6, 1,
-#               1, 1, 6, 1, 1, 1, 6, 1, 1, 6]
+
+class _TestIMWKMeansPB(IMWKMeansPB):
+    """Do not use it. Special implementation of APInitPB for testing purposes only."""
+
+    def _new_cluster(self, label, data):
+        return _TestAWardPBCluster(label, data, self._p, self._beta)
 
 
 def test_iris_sklearn():
@@ -24,32 +27,6 @@ def test_iris_sklearn():
     run_imwk_means = IMWKMeansPB(clusters, p, beta)
     imwk_means_result = run_imwk_means()
     assert transformation_exists(k_means.labels_, imwk_means_result)
-    ref_array = [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-                 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 7, 7, 7, 6, 7, 3, 7, 4, 7, 3, 4, 3, 6, 7, 8, 7, 3, 6,
-                 7, 6, 5, 6, 7, 7, 7, 7, 7, 5, 7, 6, 6, 6, 6, 5, 3, 7, 7, 7, 3, 6, 3, 7, 6, 4, 3, 3, 3, 7, 4, 3, 1, 5,
-                 1, 5, 1, 1, 3, 1, 1, 1, 5, 5, 1, 5, 5, 5, 5, 1, 1, 5, 1, 5, 1, 5, 1, 1, 5, 5, 5, 1, 1, 1, 5, 5, 5, 1,
-                 5, 5, 5, 1, 1, 5, 5, 1, 1, 5, 5, 5, 5, 5]
-    assert transformation_exists(ref_array, imwk_means_result)
-
-
-def test_iris_matlab():
-    p, beta = 2, 2
-    data = np.loadtxt('{}iris.pts'.format(DATA_DIR))
-    run_ap_init_pb = APInitPB(data, p, beta)
-    ap_init_pb_result = run_ap_init_pb()
-    print(ap_init_pb_result)
-    clusters = run_ap_init_pb.clusters
-    run_imwk_means = IMWKMeansPB(clusters, p, beta)
-    imwk_means_result = run_imwk_means()
-    # for el in imwk_means_result:
-    #     print(el)
-    ref_array2 = [2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,3,3,3,4,3,7,3,4,3,7,4,5,4,3,7,3,3,7,5,4,6,5,6,3,5,3,3,3,3,4,4,4,7,6,3,3,3,5,7,7,7,3,7,4,7,7,7,5,4,7,1,6,1,1,1,1,3,1,1,1,1,6,1,6,6,1,1,1,1,6,1,6,1,6,1,1,6,6,1,1,1,1,1,6,6,1,1,1,6,1,1,1,6,1,1,1,6,1,1,6]
-    from pprint import pprint
-    pprint([cluster.centroid for cluster in clusters])
-    # print(np.unique(ref_array))
-    # print(np.unique(ref_array2))
-    # print(np.unique(imwk_means_result))
-    assert transformation_exists(ref_array2, imwk_means_result)
 
 
 def test_symmetric_15points():
@@ -76,3 +53,21 @@ def test_500_random():
     run_imwk_means = IMWKMeansPB(clusters, p, beta)
     imwk_means_result = run_imwk_means()
     assert transformation_exists(k_means.labels_, imwk_means_result)
+
+
+def test_iris_matlab():
+    p, beta = 2, 2
+    threshold = 0
+    data_path = '{}iris.pts'.format(DATA_DIR)
+    data = np.loadtxt(data_path)
+    run_ap_init_pb = _TestAPInitPB(data, p, beta)
+    ap_init_pb_result = run_ap_init_pb()
+    clusters = run_ap_init_pb.clusters
+    run_imwk_means = _TestIMWKMeansPB(clusters, p, beta)
+    imwk_means_result = run_imwk_means()
+    data_file = "'" + os.path.abspath(data_path) + "'"
+    matlab_result = matlab_connector('test_imwk_means_pb', data_file, threshold, p, beta)
+    matlab_result = [int(i) for i in matlab_result]
+    print("matlab_result = {}".format(matlab_result))
+    print("my result =     {}".format(list(imwk_means_result)))
+    assert transformation_exists(matlab_result, imwk_means_result)
