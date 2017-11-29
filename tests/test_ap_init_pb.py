@@ -63,6 +63,29 @@ def test_symmetric_15points_matlab():
     matlab_result = [int(i) for i in matlab_result]
     assert transformation_exists(matlab_result, result)
 
+
+def test_500_random_matlab():
+    p, beta = 2, 2
+    threshold = 0
+    data_path = '{}data500ws.pts'.format(DATA_DIR)
+    data = np.loadtxt(data_path)
+    run_api_p_beta = APInitPB(data, p=p, beta=beta)
+    result = run_api_p_beta()
+    data_file = "'" + os.path.abspath(data_path) + "'"
+    matlab_result = matlab_connector('test_ap_init_pb', data_file, threshold, p, beta)
+    matlab_result = [int(i) for i in matlab_result]
+    print("matlab={}".format(matlab_result))
+    print("my=    {}".format(list(result)))
+    print("u matlab={}".format(np.unique(matlab_result)))
+    print("u my=    {}".format(np.unique(list(result))))
+    for i in range(0, len(result)):
+        if result[i] != matlab_result[i]:
+            if result[i] == 7 and matlab_result[i] == 6: continue
+            print("{} {} {:3d} |{}".format(matlab_result[i], result[i], i, data[i, :]))
+
+    assert transformation_exists(matlab_result, result)
+
+
 def _naive_ap_init_pb(data, p, beta):
     data_copy = np.copy(data)
     centroids = []

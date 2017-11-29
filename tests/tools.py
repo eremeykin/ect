@@ -18,6 +18,7 @@ def transformation_exists(X, Y):
         else:
             if YX[y] != x:
                 return False
+
     inv = {v: k for k, v in YX.items()}
     if inv != XY:
         return False
