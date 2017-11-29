@@ -2,11 +2,9 @@ import numpy as np
 
 from clustering.pattern_initialization.ap_init import APInit
 from tests.tools import transformation_exists
+from tests.parameters import DATA_DIR
 
-DATA_DIR = "/home/eremeykin/d_disk/projects/Clustering/ect/tests/shared/data/"
-
-
-def test_symmetric_16points():
+def test_symmetric_15points():
     data = np.loadtxt('{}symmetric_15points.pts'.format(DATA_DIR))
     run_ap_init = APInit(data)
     result = run_ap_init()

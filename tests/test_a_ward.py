@@ -3,11 +3,10 @@ import numpy as np
 from clustering.agglomerative.algorithms.a_ward import AWard
 from tests.tools import transformation_exists
 from sklearn.cluster import AgglomerativeClustering as sklearn_clustering
+from tests.parameters import DATA_DIR
 
-DATA_DIR = "/home/eremeykin/d_disk/projects/Clustering/ect/tests/shared/data/"
 
-
-def test_symmetric_16points():
+def test_symmetric_15points():
     data = np.loadtxt('{}symmetric_15points.pts'.format(DATA_DIR))
     run_a_ward = AWard.from_labels(data, labels=np.arange(0, len(data), dtype=int), k_star=5)
     result = run_a_ward()

@@ -5,7 +5,7 @@ from clustering.common import minkowski_center
 from scipy.spatial.distance import sqeuclidean as se_dist
 
 
-class AgglomerativeCluster(ABC, Cluster):
+class AgglomerativeCluster(Cluster):
     def __init__(self, label, data):
         super().__init__(label, data)
 
@@ -24,27 +24,19 @@ class AWardCluster(AgglomerativeCluster):
     def __init__(self, label, data):
         super().__init__(label, data)
         self._w = None
-        self._is_stable = False
 
-    def set_points_and_update(self, points_indices):
-        """Add points to the cluster and update it.
+    def set_points(self, points_indices):
+        """Assigns points to this cluster WITHOUT update"""
 
-        :param numpy.array points_indices: list of indices of points to add. Index is based on cluster data."""
-        if len(points_indices) == 0 or set(self._points_indices) == set(points_indices):
-            self._is_stable = True
-            return
-        self._points_indices = points_indices
+    def _update(self):
+        """Updates cluster centroid and w parameter"""
         cluster_points = self._data[self._points_indices]
         # centroid update to the component-wise mean
         self._centroid = np.mean(cluster_points, axis=0)
         # Special property of cluster calculated as sum of square euclidean distance from each point to centroid
-        self._w = np.sum((cluster_points - self.centroid)**2)
+        self._w = np.sum((cluster_points - self.centroid) ** 2)
         # weights update (as per 7)
         assert self._centroid.shape == (self._dim_cols,)
-
-    @property
-    def is_stable(self):
-        return self._is_stable
 
     def distance(self, point1, point2=None):
         if point2 is None:
@@ -78,25 +70,8 @@ class AWardCluster(AgglomerativeCluster):
     @property
     def w(self):
         if self._w is None:
-            raise WUndefined("w is undefined for an empty cluster: {}" .format(self))
+            raise WUndefined("w is undefined for an empty cluster: {}".format(self))
         return self._w
-
-    def add_point_and_update(self, point_index):
-        """Adds one point to this cluster.
-        :param int point_index: index of the point in cluster data to be added
-
-        """
-        point = self.data[point_index]
-        if self.power == 0:
-            self._w = 0
-            self._centroid = point
-        else:
-            assert self._w is not None
-            assert self._centroid is not None
-            self._w = self.w + 0 + (((self.power * 1) / (self.power + 1)) *
-                                    np.sum((self.centroid - point) ** 2))
-            self._centroid = (self.centroid * self.power + point) / (self.power + 1)
-        self._points_indices = np.append(self.points_indices, point_index)
 
     def award_distance(self, cluster):
         na, nb = self.power, cluster.power
@@ -105,7 +80,7 @@ class AWardCluster(AgglomerativeCluster):
         return distance
 
 
-class AWardPBetaCluster(AgglomerativeCluster):
+class AWardPBCluster(AgglomerativeCluster):
     """Cluster for A-Ward agglomerative clustering with p and beta parameters
     """
 
@@ -120,24 +95,13 @@ class AWardPBetaCluster(AgglomerativeCluster):
         super().__init__(label, data)
         self._p = p
         self._beta = beta
-        self._is_stable = False
         if weights is None:
             self._weights = np.full(shape=(1, self._dim_cols), fill_value=1 / self._dim_cols)
 
-    @property
-    def is_stable(self):
-        return self._is_stable
-
-    def set_points_and_update(self, points_indices):
-        """Add points to the cluster and update it.
-
-        :param numpy.array points_indices: list of indices of points to add. Index is based on cluster data."""
-        if len(points_indices) == 0 or set(self._points_indices) == set(points_indices):
-            self._is_stable = True
-            return
-        self._points_indices = points_indices
-        cluster_points = self._data[self._points_indices]
+    def _update(self):
+        """Updates cluster centroid and weights"""
         # centroid update to the component-wise Minkowski centre of all points
+        cluster_points = self._data[self._points_indices]
         self._centroid = minkowski_center(cluster_points, self._p)
         # weights update (as per 7)
         D = np.sum(np.abs(cluster_points - self.centroid) ** self._p, axis=0).astype(np.float64)
@@ -160,15 +124,16 @@ class AWardPBetaCluster(AgglomerativeCluster):
         """Distance in terms of this cluster. If point2 is None? then distance to centroid"""
         if point2 is None:
             point2 = self.centroid
-        return AWardPBetaCluster.distance_formula(point1, point2, self._weights, self._p, self._beta)
+        return AWardPBCluster.distance_formula(point1, point2, self._weights, self._p, self._beta)
 
     def merge(self, cluster1, cluster2, new_label):
         raise NotImplemented("merge of AWardPBetaCluster is not implemented")
 
     def __str__(self):
-        res = "AWard_pb Cluster #{}\n".format(self.label)
-        res += "centroid: {}\n".format(self.centroid)
-        res += "weights: {}\n".format(self._weights)
+        res = "AWard_pb Cluster #{}: ".format(self.label)
+        res += "centroid: {}, ".format(self.centroid)
+        res += "weights: {}, ".format(self._weights)
+        res += "power: {}".format(self.power)
         return res
 
 
@@ -182,5 +147,3 @@ class EqualClustersMergeException(BaseException):
 
 class DifferentDataMergeException(BaseException):
     pass
-
-

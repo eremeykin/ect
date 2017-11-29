@@ -19,24 +19,16 @@ class AWard:
 
     @classmethod
     def from_labels(cls, data, labels, k_star=None, alpha=None):
+        """Creates AWard algoritm preset for given labeled data"""
         # init self._clusters
-        index = np.arange(len(data), dtype=int)
-
-        clusters = []
-        dim_rows = data.shape[0]
-        if labels is None:
-            labels = np.arange(0, len(data), 1)
-        # create cluster structure according given labels
-        for cluster_label in np.unique(labels):
-            new_cluster = AWardCluster(cluster_label, data)
-            new_cluster.set_points_and_update(index[labels == cluster_label])
-            clusters.append(new_cluster)
+        clusters = AWardCluster.clusters_from_labels(data, labels)
         return cls(clusters, k_star, alpha)
 
     def check_criterion(self, cluster1, cluster2, cluster):
         return (1 - self.alpha) * cluster.w < cluster1.w + cluster2.w
 
     def _get_pointer(self):
+        """Get the pointer which specifies where to stop according criteria"""
         if self.k_star is not None:
             pointer = len(self.merge_matrix) - self.k_star + 1
             return pointer
@@ -66,8 +58,8 @@ class AWard:
             if current_cluster not in merged:
                 result_clusters.append(self._clusters[int(current_cluster)])
             pointer -= 1
-        result = np.full(fill_value=0, shape=self._dim_rows)
 
+        result = np.full(fill_value=0, shape=self._dim_rows)
         for c in range(0, len(result_clusters)):
             cluster = result_clusters[c]
             result[cluster.points_indices] = c

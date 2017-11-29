@@ -4,7 +4,6 @@ from abc import ABC, abstractmethod
 
 
 class AbstractAPInit(ABC):
-
     def __init__(self, data):
         self._data = data.astype(object)  # TODO think about something more elegant
         index = np.arange(len(data), dtype=int)[None].T
@@ -14,6 +13,7 @@ class AbstractAPInit(ABC):
         self._dim_rows = data.shape[0]
         self._dim_cols = data.shape[1]
         self._origin = self._calculate_origin()
+        self._completed = False
 
     @abstractmethod
     def _new_cluster(self, label, data):
@@ -30,6 +30,13 @@ class AbstractAPInit(ABC):
         """Gets current data with index as first column and calculate furthest point relative index
         i.e. index in current_idata"""
         pass
+
+    @property
+    def clusters(self):
+        if not self._completed:
+            raise AbstractAPInit.AccessToUnavailableResult("Can't return clusters because the algoritm must be "
+                                                           "executed first. Please? use __call__ to run algorithm.")
+        return self._clusters
 
     def _furthest_point_index(self, current_idata):
         """Gets current data with index as first column and calculate furthest point index.
@@ -71,4 +78,8 @@ class AbstractAPInit(ABC):
                 anomalous_cluster.set_points_and_update(anomalous_points_indices)  # step 3 and 4,5 inside update
             self._clusters.append(anomalous_cluster)  # step 6
             current_idata = current_idata[~anomaly]
+        self._completed = True
         return self._result_array()
+
+    class AccessToUnavailableResult(BaseException):
+        pass

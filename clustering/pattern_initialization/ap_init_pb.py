@@ -1,5 +1,5 @@
 import numpy as np
-from clustering.agglomerative.agglomerative_cluster import AWardPBetaCluster
+from clustering.agglomerative.agglomerative_cluster import AWardPBCluster
 from clustering.pattern_initialization.abstr_ap_init import AbstractAPInit
 from clustering.common import minkowski_center
 
@@ -22,11 +22,11 @@ class APInitPB(AbstractAPInit):
         equal_weights = np.ones(shape=(self._dim_cols,)) / self._dim_cols
 
         dist_point_to_origin = np.apply_along_axis(
-            func1d=lambda point: AWardPBetaCluster.distance_formula(
+            func1d=lambda point: AWardPBCluster.distance_formula(
                 point, self._origin, equal_weights, self._p, self._beta),
             axis=1,
             arr=current_idata[:, 1:])
         return dist_point_to_origin.argmax()
 
     def _new_cluster(self, label, data):
-        return AWardPBetaCluster(label, data, self._p, self._beta)
+        return AWardPBCluster(label, data, self._p, self._beta)
