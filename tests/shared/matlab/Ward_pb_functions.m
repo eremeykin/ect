@@ -219,12 +219,13 @@ MinkCentre(1,:)  = New_cmt(Data,p);
 OnesIndex=ones(Initial_Size_Data,1);
 %Second Step = Sorts Data Accordint to the centre
 [~, index]= sort(MinkDist(Data, MinkCentre(OnesIndex,:), p, EqualWeights.^beta,OnesIndex)); 
-Data = Data(index,:);
 
 DataLen = size(Data, 1);
 Lables = zeros(DataLen,1);
 Index = [1:1:DataLen]';
 IData = cat(2, Index, Data);
+
+Data = Data(index,:);
 IData = IData(index,:);
 
 CurrentLabel = 0;
@@ -262,7 +263,16 @@ while ~isempty (Data)
         Centroids = [Centroids; NewCentroid]; %#ok<AGROW>
         Weights = [Weights; TentW]; %#ok<AGROW>    
         QtdInCluster = [QtdInCluster; sum(BelongsToCentroid)]; %#ok<AGROW>
-        %NewCluster = sort(IData(BelongsToCentroid==1,1)) -1;
+%         MinkCentre
+%         NewCluster = sort(IData(BelongsToCentroid==1,1)) -1
+%          TentW
+%         if CurrentLabel==2
+%             disp 'here'
+%             IData
+%             CurrentLabel
+%             MinkDist(Data, TentCentroid(OnesIndex,:), p, TentW.^beta,OnesIndex)
+%             MinkDist(Data, MinkCentre(OnesIndex,:), p, TentW.^beta,OnesIndex)
+%         end
         Labels(IData(BelongsToCentroid==1,1)) = CurrentLabel;
         CurrentLabel = CurrentLabel + 1;
     end

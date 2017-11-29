@@ -168,7 +168,7 @@ end
 end
 
 
-function [U, FinalW, InitW, FinalZ, InitZ, UDistToZ,LoopCount] = iMWKmeans(Data, ikThreshold, p, beta, MaxK)
+function [U, FinalW, InitW, FinalZ, InitZ, UDistToZ,LoopCount, AnomalousLabels] = iMWKmeans(Data, ikThreshold, p, beta, MaxK)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %intelligent Minkowski Weighted K-Means
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -225,13 +225,15 @@ DataLen = size(Data, 1);
 Lables = zeros(DataLen,1);
 Index = [1:1:DataLen]';
 IData = cat(2, Index, Data);
+IData = IData(index,:);
+
 CurrentLabel = 0;
 %Third Step Anomalous Patter
 while ~isempty (Data)
     DataSize = size(Data,1);
     OnesIndex=ones(DataSize,1);
     TentCentroid = Data(DataSize,:); % Gets a tentative Centroid
-    TentCentroid
+    TentCentroid = Data(DataSize,:)
     PreviousBelongsToCentroid=[];
     PreviousPreviousBelongsToCentroid=[];
     TentW=EqualWeights;
@@ -261,7 +263,14 @@ while ~isempty (Data)
         Centroids = [Centroids; NewCentroid]; %#ok<AGROW>
         Weights = [Weights; TentW]; %#ok<AGROW>    
         QtdInCluster = [QtdInCluster; sum(BelongsToCentroid)]; %#ok<AGROW>
-        NewCluster = 
+        NewCluster = sort(IData(BelongsToCentroid==1,1)) -1
+        if CurrentLabel==2
+            disp 'here'
+            IData
+            CurrentLabel
+            MinkDist(Data, TentCentroid(OnesIndex,:), p, TentW.^beta,OnesIndex)
+            MinkDist(Data, MinkCentre(OnesIndex,:), p, TentW.^beta,OnesIndex)
+        end
         Labels(IData(BelongsToCentroid==1,1)) = CurrentLabel;
         CurrentLabel = CurrentLabel + 1;
     end
@@ -279,11 +288,10 @@ end
 
 InitW=Weights;
 InitZ=Centroids;
-Centroids;
-Labels'
+AnomalousLabels = Labels';
 
 %Runs MWK-Means if the found initial values
-[U, FinalW, FinalZ, UDistToZ, LoopCount] = MWKmeans(InitialData, size(Centroids,1), p, beta, Centroids, Weights);
+[U, FinalW, FinalZ, UDistToZ, LoopCount, ] = MWKmeans(InitialData, size(Centroids,1), p, beta, Centroids, Weights);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
