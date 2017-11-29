@@ -263,16 +263,6 @@ while ~isempty (Data)
         Centroids = [Centroids; NewCentroid]; %#ok<AGROW>
         Weights = [Weights; TentW]; %#ok<AGROW>    
         QtdInCluster = [QtdInCluster; sum(BelongsToCentroid)]; %#ok<AGROW>
-%         MinkCentre
-%         NewCluster = sort(IData(BelongsToCentroid==1,1)) -1
-%          TentW
-%         if CurrentLabel==2
-%             disp 'here'
-%             IData
-%             CurrentLabel
-%             MinkDist(Data, TentCentroid(OnesIndex,:), p, TentW.^beta,OnesIndex)
-%             MinkDist(Data, MinkCentre(OnesIndex,:), p, TentW.^beta,OnesIndex)
-%         end
         Labels(IData(BelongsToCentroid==1,1)) = CurrentLabel;
         CurrentLabel = CurrentLabel + 1;
     end
