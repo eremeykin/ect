@@ -3,6 +3,8 @@ import numpy as np
 
 
 class IMWKMeansPB:
+    _MAX_LOOPS = 500
+
     def __init__(self, clusters, p, beta):
         self._p = p
         self._beta = beta
@@ -18,12 +20,19 @@ class IMWKMeansPB:
         clusters = AWardPBCluster.clusters_from_labels(data, labels)
         return clusters
 
-    def _new_cluster(self, label, data):
-        return AWardPBCluster(label, data, self._p, self._beta)
+    @property
+    def clusters(self):
+        return self._clusters
+
+    def _get_result(self):
+        result = np.full(fill_value=0, shape=self._dim_rows)
+        for c in range(0, len(self._clusters)):
+            cluster = self._clusters[c]
+            result[cluster.points_indices] = c
+        return np.array(result)
 
     def __call__(self):
-        # entity assignment
-        while True:
+        for loop in range(IMWKMeansPB._MAX_LOOPS):
             cluster_points = {cluster.label: [] for cluster in self._clusters}
 
             def distribute_points(ipoint):
@@ -32,14 +41,14 @@ class IMWKMeansPB:
                 cluster_points[cluster.label].append(index)
 
             np.apply_along_axis(func1d=distribute_points, axis=1, arr=self._idata)
+            aux = [set(points) for cluster, points in cluster_points.items()]  # only for assert
+            assert len(set().union(*aux)) == sum(len(s) for s in aux)
+
             for cluster in self._clusters:
                 label = cluster.label
                 cluster.set_points_and_update(cluster_points[label])
+
+            assert all([cluster.power > 0 for cluster in self._clusters])
             if all((cluster.is_stable for cluster in self._clusters)):
                 break
-
-        result = np.full(fill_value=0, shape=self._dim_rows)
-        for c in range(0, len(self._clusters)):
-            cluster = self._clusters[c]
-            result[cluster.points_indices] = c
-        return np.array(result)
+        return self._get_result()
