@@ -6,7 +6,7 @@ import os
 from scipy.spatial.distance import minkowski
 from clustering.common import get_weights, minkowski_center, weighed_minkowski
 from tests.parameters import DATA_DIR
-from tests.tools import matlab_connector
+from tests.tools import matlab_connector, array_equals_up_to_order
 from clustering.agglomerative.agglomerative_cluster import AWardPBCluster
 
 
@@ -81,9 +81,35 @@ def test_iris_matlab():
     p, beta = 2, 2
     threshold = 0
     data_path = '{}iris.pts'.format(DATA_DIR)
+    matlab_weights, my_weights, matlab_centroids, my_centroids, matlab_labels, my_labels = \
+        _my_vs_matlab(p, beta, threshold, data_path)
+    _assert(matlab_weights, my_weights, matlab_centroids, my_centroids, matlab_labels, my_labels)
+
+
+def test_symmetric_15points_matlab():
+    p, beta = 2, 2
+    threshold = 0
+    data_path = '{}symmetric_15points.pts'.format(DATA_DIR)
+    matlab_weights, my_weights, matlab_centroids, my_centroids, matlab_labels, my_labels = \
+        _my_vs_matlab(p, beta, threshold, data_path)
+    matlab_weights[-1, :] = np.array([0.5, 0.5])  # replace Nan from matlab
+    matlab_centroids[-1, :] = np.array([0, 0])  # replace Nan from matlab
+    _assert(matlab_weights, my_weights, matlab_centroids, my_centroids, matlab_labels, my_labels)
+
+
+def test_500_random_matlab():
+    p, beta = 2, 2
+    threshold = 0
+    data_path = '{}data500ws.pts'.format(DATA_DIR)
+    matlab_weights, my_weights, matlab_centroids, my_centroids, matlab_labels, my_labels = \
+        _my_vs_matlab(p, beta, threshold, data_path)
+    _assert(matlab_weights, my_weights, matlab_centroids, my_centroids, matlab_labels, my_labels)
+
+
+def _my_vs_matlab(p, beta, threshold, data_path):
     data = np.loadtxt(data_path)
     run_api_p_beta = _TestAPInitPB(data, p=p, beta=beta)
-    result = run_api_p_beta()
+    my_labels = run_api_p_beta()
     data_file = "'" + os.path.abspath(data_path) + "'"
     matlab_result = matlab_connector('test_ap_init_pb', data_file, threshold, p, beta)
     matlab_labels = matlab_result['AnomalousLabels'].flatten().astype(int)
@@ -91,39 +117,16 @@ def test_iris_matlab():
     matlab_centroids = matlab_result['InitZ']
     my_weights = np.array([c._weights for c in run_api_p_beta.clusters])
     my_centroids = np.array([c.centroid for c in run_api_p_beta.clusters]).astype(float)
-    assert np.allclose(my_weights, matlab_weights, atol=1.e-5)
-    assert np.allclose(my_centroids, matlab_centroids, atol=1.e-5)
-    assert transformation_exists(matlab_labels, result)
+    return matlab_weights, my_weights, matlab_centroids, my_centroids, matlab_labels, my_labels
 
 
-def test_symmetric_15points_matlab():
-    p, beta = 2, 2
-    threshold = 0
-    data_path = '{}symmetric_15points.pts'.format(DATA_DIR)
-    data = np.loadtxt(data_path)
-    run_api_p_beta = _TestAPInitPB(data, p=p, beta=beta)
-    result = run_api_p_beta()
-    data_file = "'" + os.path.abspath(data_path) + "'"
-    matlab_result = matlab_connector('test_ap_init_pb', data_file, threshold, p, beta)
-    matlab_result = [int(i) for i in matlab_result]
-    assert transformation_exists(matlab_result, result)
-
-
-def test_500_random_matlab():
-    p, beta = 2, 2
-    threshold = 0
-    data_path = '{}data500ws.pts'.format(DATA_DIR)
-    data = np.loadtxt(data_path)
-    run_api_p_beta = _TestAPInitPB(data, p=p, beta=beta)
-    result = run_api_p_beta()
-    data_file = "'" + os.path.abspath(data_path) + "'"
-    matlab_result = matlab_connector('test_ap_init_pb', data_file, threshold, p, beta)
-    matlab_result = [int(i) for i in matlab_result]
-    assert transformation_exists(matlab_result, result)
+def _assert(matlab_weights, my_weights, matlab_centroids, my_centroids, matlab_labels, my_labels):
+    assert array_equals_up_to_order(my_weights, matlab_weights, atol=1.e-5)
+    assert array_equals_up_to_order(my_centroids, matlab_centroids, atol=1.e-5)
+    assert transformation_exists(matlab_labels, my_labels)
 
 
 def _naive_ap_init_pb(data, p, beta):
-    data_copy = np.copy(data)
     centroids = []
     weights = []
     indices = np.arange(len(data))
@@ -143,8 +146,8 @@ def _naive_ap_init_pb(data, p, beta):
         anomaly[ct_index] = True
         tent_w = np.full(fill_value=1 / V, shape=V)
         while not (np.array_equal(ct_queue[-1], ct_queue[-2]) or np.array_equal(ct_queue[-1], ct_queue[-3])):
-            # tobj.plot(data, labels[indices], centroids, show_num=False)
-            x_to_origin = np.apply_along_axis(lambda x: weighed_minkowski(x, origin, p, tent_w, beta), axis=1, arr=data)
+            x_to_origin = np.apply_along_axis(lambda x: weighed_minkowski(x, origin, p, tent_w, beta), axis=1,
+                                              arr=data)
             x_to_ct = np.apply_along_axis(lambda x: weighed_minkowski(x, ct, p, tent_w, beta), axis=1, arr=data)
             anomaly = x_to_ct < x_to_origin
             # normalcy = ~anomaly

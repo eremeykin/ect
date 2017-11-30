@@ -5,6 +5,12 @@ import re
 import numpy as np
 
 
+def array_equals_up_to_order(array1, array2, atol=1.e-5):
+    array1 = array1[array1[:, 0].argsort()]
+    array2 = array2[array2[:, 0].argsort()]
+    return np.allclose(array1, array2, atol=atol)
+
+
 def transformation_exists(X, Y):
     if len(X) != len(Y):
         return False
@@ -32,7 +38,8 @@ def transformation_exists(X, Y):
 def matlab_connector(matlab_function, *args):
     matlab_code = "cd '{SHARED_MATLAB}'; ".format(SHARED_MATLAB=SHARED_MATLAB)
     matlab_code += 'format long; {matlab_function}({parameters}); exit'.format(matlab_function=matlab_function,
-                                                                  parameters=",".join([str(a) for a in args]))
+                                                                               parameters=",".join(
+                                                                                   [str(a) for a in args]))
     command = [MATLAB_PATH, "-nodisplay", "-nosplash", "-nodesktop", "-r", matlab_code]
     result = subprocess.run(command, stdout=subprocess.PIPE).stdout.decode()
     # print(result)
@@ -47,7 +54,8 @@ def matlab_connector(matlab_function, *args):
             line = line.strip()
             values = [float(x) for x in re.compile(' +').split(line)]
             line_array = np.array(values)
-            value_array = np.vstack((value_array if len(value_array)>0 else np.empty(shape=(0,len(line_array))), line_array))
+            value_array = np.vstack(
+                (value_array if len(value_array) > 0 else np.empty(shape=(0, len(line_array))), line_array))
         result_dict[name] = value_array
     return result_dict
 
