@@ -63,8 +63,13 @@ class Cluster(ABC):
 
     def set_points_and_update(self, points_indices):
         """Add points to the cluster and update it.
+        -----------------------------------------------------------------------------
+        ATTENTION IT SUPPOSES THAT CLUSTER DO NOT DEPEND ON OTHER CLUSTERS AT ALL!!!
+        look for example at imwk_means and it's weights update
 
         :param numpy.array points_indices: list of indices of points to add. Index is based on cluster data."""
+        # ATTENTION IT SUPPOSES THAT CLUSTER DO NOT DEPEND ON OTHER CLUSTERS AT ALL!!!
+        # look for example at imwk_means and it's weights update
         if len(points_indices) == 0 or set(self._points_indices) == set(points_indices):
             self._is_stable = True
             return
