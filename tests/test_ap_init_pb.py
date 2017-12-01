@@ -30,7 +30,7 @@ class _TestAWardPBCluster(AWardPBCluster):
         D = np.sum(np.abs(cluster_points - self.centroid) ** self._p, axis=0).astype(np.float64)
         with np.errstate(divide='ignore', invalid='ignore'):
             D += 0.01
-            denominator = ((D ** (1 / (self._p - 1))) * np.sum((np.float64(1.0) / D) ** (1 / (self._beta - 1))))
+            denominator = ((D ** (1 / (self._beta - 1))) * np.sum((np.float64(1.0) / D) ** (1 / (self._beta - 1))))
         isnan = np.isnan(denominator)
         if np.any(isnan):
             self._weights = isnan.astype(int) / np.sum(isnan)
@@ -108,15 +108,17 @@ def test_500_random_matlab():
 
 def _my_vs_matlab(p, beta, threshold, data_path):
     data = np.loadtxt(data_path)
+    data_file = "'" + os.path.abspath(data_path) + "'"
     run_api_p_beta = _TestAPInitPB(data, p=p, beta=beta)
     my_labels = run_api_p_beta()
-    data_file = "'" + os.path.abspath(data_path) + "'"
+    my_weights = np.array([c._weights for c in run_api_p_beta.clusters])
+    my_centroids = np.array([c.centroid for c in run_api_p_beta.clusters]).astype(float)
+    # run matlab implementation
     matlab_result = matlab_connector('test_ap_init_pb', data_file, threshold, p, beta)
     matlab_labels = matlab_result['AnomalousLabels'].flatten().astype(int)
     matlab_weights = matlab_result['InitW']
     matlab_centroids = matlab_result['InitZ']
-    my_weights = np.array([c._weights for c in run_api_p_beta.clusters])
-    my_centroids = np.array([c.centroid for c in run_api_p_beta.clusters]).astype(float)
+
     return matlab_weights, my_weights, matlab_centroids, my_centroids, matlab_labels, my_labels
 
 
