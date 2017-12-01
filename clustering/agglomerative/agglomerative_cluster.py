@@ -73,7 +73,8 @@ class AWardCluster(AgglomerativeCluster):
             raise WUndefined("w is undefined for an empty cluster: {}".format(self))
         return self._w
 
-    def award_distance(self, cluster):
+    def inter_cluster_distance(self, cluster):
+        """Ward distance between this cluster and specified one"""
         na, nb = self.power, cluster.power
         delta = cluster.centroid - self.centroid
         distance = ((na * nb) / (na + nb)) * (sum(delta ** 2))
@@ -127,6 +128,16 @@ class AWardPBCluster(AgglomerativeCluster):
         if point2 is None:
             point2 = self.centroid
         return AWardPBCluster.distance_formula(point1, point2, self._weights, self._p, self._beta)
+
+    def inter_cluster_distance(self, cluster):
+        """WardPB distance between this cluster and specified one"""
+        na, nb = self.power, cluster.power
+        wa, wb = self._weights, cluster._weights
+        delta = cluster.centroid - self.centroid
+        weight_multiplier = ((wa+wb)/2)**self._beta
+        distance = ((na * nb) / (na + nb)) * (sum(weight_multiplier * (delta ** self._p)))
+        return distance
+
 
     def merge(self, cluster1, cluster2, new_label):
         raise NotImplemented("merge of AWardPBetaCluster is not implemented")
