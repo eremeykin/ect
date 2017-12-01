@@ -22,7 +22,7 @@ class NearestNeighborChain:
         for cluster in self._remaining_clusters:
             if cluster == base_cluster:
                 continue
-            dist = base_cluster.award_distance(cluster)
+            dist = base_cluster.inter_cluster_distance(cluster)
             if dist < min_dist:
                 min_dist = dist
                 nearest = cluster
