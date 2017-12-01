@@ -11,15 +11,22 @@ class AWard:
     :param int k_star: number of clusters to obtain (optional).
     :param float alpha: parameter of stop criteria (optional). If not specified, k_star is used to stop."""
 
+    class WrongParametersException(BaseException):
+        pass
+
     def __init__(self, clusters, k_star=None, alpha=None):
         self.k_star = k_star
         self.alpha = alpha
         self._dim_rows = sum((cluster.power for cluster in clusters))
-        self._clusters = clusters
+        self._init_clusters = clusters
+        self._clusters = []
+        self._cluster_by_label = dict()
 
     @classmethod
     def from_labels(cls, data, labels, k_star=None, alpha=None):
         """Creates AWard algorithm preset for given labeled data"""
+        if k_star is not None and alpha is not None:
+            raise AWard.WrongParametersException("k_star and alpha can't be set simultaneously")
         clusters = AWardCluster.clusters_from_labels(data, labels)
         return cls(clusters, k_star, alpha)
 
@@ -33,11 +40,11 @@ class AWard:
             return pointer
         else:
             for pointer in range(0, len(self.merge_matrix) - 1):
-                c1, c2, c_new, dist = self.merge_matrix[pointer]
-                c1, c2, c_new = int(c1), int(c2), int(c_new)
-                if self.check_criterion(self._clusters[c1],
-                                        self._clusters[c2],
-                                        self._clusters[c_new]):
+                c_label1, c_label2, c_label_new, dist = self.merge_matrix[pointer]
+                c_label1, c_label2, c_label_new = int(c_label1), int(c_label2), int(c_label_new)
+                if self.check_criterion(self._cluster_by_label[c_label1],
+                                        self._cluster_by_label[c_label2],
+                                        self._cluster_by_label[c_label_new]):
                     return pointer
 
     def __call__(self):
@@ -45,8 +52,9 @@ class AWard:
 
         :returns list of resulting clusters."""
 
-        run_nnc = NearestNeighborChain(self._clusters)
+        run_nnc = NearestNeighborChain(self._init_clusters)
         self._clusters, self.merge_matrix = run_nnc()
+        self._cluster_by_label = {cluster.label: cluster for cluster in self._clusters}
         # find position where we had to stop according selected criterion: k_star or by formula 8
         pointer = self._get_pointer()
         merged = self.merge_matrix[:pointer, 0:2]  # - all clusters that had been merged before pointer
@@ -55,7 +63,7 @@ class AWard:
         for i in range(0, pointer):
             current_cluster = self.merge_matrix[pointer, 2]
             if current_cluster not in merged:
-                result_clusters.append(self._clusters[int(current_cluster)])
+                result_clusters.append(self._cluster_by_label[int(current_cluster)])
             pointer -= 1
 
         result = np.full(fill_value=0, shape=self._dim_rows)
