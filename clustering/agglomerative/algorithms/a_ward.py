@@ -19,8 +19,7 @@ class AWard:
 
     @classmethod
     def from_labels(cls, data, labels, k_star=None, alpha=None):
-        """Creates AWard algoritm preset for given labeled data"""
-        # init self._clusters
+        """Creates AWard algorithm preset for given labeled data"""
         clusters = AWardCluster.clusters_from_labels(data, labels)
         return cls(clusters, k_star, alpha)
 
