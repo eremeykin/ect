@@ -10,7 +10,8 @@ class NearestNeighborChain:
     :param list clusters: list of AgglomerativeCluster, initial state of algorithm
     """
 
-    def __init__(self, clusters):
+    def __init__(self, cluster_structure, clusters):
+        self._cluster_structure = cluster_structure
         self._clusters = clusters
         self._remaining_clusters = self._clusters[:]
         self._initial_clusters_number = len(clusters)
@@ -22,7 +23,7 @@ class NearestNeighborChain:
         for cluster in self._remaining_clusters:
             if cluster == base_cluster:
                 continue
-            dist = base_cluster.inter_cluster_distance(cluster)
+            dist = base_cluster.dist_cluster_to_cluster(cluster)
             if dist < min_dist:
                 min_dist = dist
                 nearest = cluster

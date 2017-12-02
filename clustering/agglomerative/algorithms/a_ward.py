@@ -14,21 +14,14 @@ class AWard:
     class WrongParametersException(BaseException):
         pass
 
-    def __init__(self, clusters, k_star=None, alpha=None):
-        self.k_star = k_star
-        self.alpha = alpha
-        self._dim_rows = sum((cluster.power for cluster in clusters))
-        self._init_clusters = clusters
-        self._clusters = []
-        self._cluster_by_label = dict()
-
-    @classmethod
-    def from_labels(cls, data, labels, k_star=None, alpha=None):
-        """Creates AWard algorithm preset for given labeled data"""
-        if k_star is not None and alpha is not None:
-            raise AWard.WrongParametersException("k_star and alpha can't be set simultaneously")
-        clusters = AWardCluster.clusters_from_labels(data, labels)
-        return cls(clusters, k_star, alpha)
+    def __init__(self, cluster_structure, k_star=None, alpha=None):
+        self._k_star = k_star
+        self._alpha = alpha
+        self._cluster_structure = cluster_structure
+        # self._dim_rows = sum((cluster.power for cluster in clusters))
+        # self._init_clusters = clusters
+        # self._clusters = []
+        # self._cluster_by_label = dict()
 
     def check_criterion(self, cluster1, cluster2, cluster):
         return (1 - self.alpha) * cluster.w < cluster1.w + cluster2.w
@@ -71,21 +64,3 @@ class AWard:
             cluster = result_clusters[c]
             result[cluster.points_indices] = c
         return np.array(result)
-
-
-def a_ward(data, k_star=None, labels=None):
-    run_award = AWard(data, labels, k_star)
-    return run_award()
-
-
-sys.argv += ["/home/eremeykin/d_disk/projects/Clustering/utils/data/data10ws.pts"]
-sys.argv += ["/home/eremeykin/d_disk/projects/Clustering/utils/labels/data10ws.lbs"]
-sys.argv += [4]
-
-if __name__ == "__main__":
-    np.set_printoptions(suppress=True, precision=4, threshold=np.nan)
-    data = np.loadtxt(sys.argv[1])
-    labels = np.loadtxt(sys.argv[2], dtype=int)
-    k_star = int(sys.argv[3])
-    result = a_ward(data, k_star, labels)
-    print("\n".join([str(x) for x in result]))

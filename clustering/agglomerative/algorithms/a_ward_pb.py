@@ -1,8 +1,5 @@
-
-
 class AWardPB():
-
-    def __init__(self, p, beta, clusters):
+    def __init__(self, clusters, p, beta):
         self.p = p
         self.beta = beta
 

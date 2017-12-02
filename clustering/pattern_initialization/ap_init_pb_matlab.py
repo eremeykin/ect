@@ -1,9 +1,9 @@
-from clustering.agglomerative.agglomerative_cluster_structure import AWardPBClusterStructure
+from clustering.agglomerative.agglomerative_cluster_structure import AWardPBClusterStructureMatlabCompatible
 from clustering.pattern_initialization.ap_init import APInit
 from clustering.common import minkowski_center
 
 
-class APInitPB(APInit):
+class APInitPBMatlabCompatible(APInit):
     """ Anomalous Pattern Initialization with p and beta parameters
     A reference paper: 'A-Ward p b : Effective hierarchical clustering using the Minkowski metric
     and a fast k -means initialisation)', see page 351,
@@ -15,7 +15,7 @@ class APInitPB(APInit):
         super().__init__(data)
 
     def _create_cluster_structure(self):
-        return AWardPBClusterStructure(self._data, self._p, self._beta)
+        return AWardPBClusterStructureMatlabCompatible(self._data, self._p, self._beta)
 
     def _calculate_origin(self):
         return minkowski_center(self._data, self._p)

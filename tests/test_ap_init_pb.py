@@ -1,4 +1,5 @@
 from clustering.pattern_initialization.ap_init_pb import APInitPB
+from clustering.pattern_initialization.ap_init_pb_matlab import APInitPBMatlabCompatible
 from tests.tools import transformation_exists
 import collections
 import numpy as np
@@ -7,45 +8,6 @@ from scipy.spatial.distance import minkowski
 from clustering.common import get_weights, minkowski_center, weighed_minkowski
 from tests.parameters import DATA_DIR
 from tests.tools import matlab_connector, array_equals_up_to_order
-from clustering.agglomerative.agglomerative_cluster import AWardPBCluster
-
-
-class _TestAWardPBCluster(AWardPBCluster):
-    """Do not use it. Special implementation of AWardPBCluster for testing purposes only.
-
-    Ok. If You are still here, I'll told you what happened. When I explored canonical matlab
-    implementation of  APInitPB (see inside iMWKmeans), I found to issues:
-        * for weights calculations they use 1/(1-beta) power instead of 1/(1-p)
-        * they use D = D + 0.01 to avoid zero division. It's not quite accurate.
-    So, this version apples this corrections for testing only. I will probably use
-    my implementation in general. That is why all '..._matlab' tests use _TestAWardPBCluster version.
-    """
-
-    def _update(self):
-        """Updates cluster centroid and weights"""
-        # centroid update to the component-wise Minkowski centre of all points
-        cluster_points = self._data[self._points_indices]
-        self._centroid = minkowski_center(cluster_points, self._p)
-        # weights update (as per 7)
-        D = np.sum(np.abs(cluster_points - self.centroid) ** self._p, axis=0).astype(np.float64)
-        with np.errstate(divide='ignore', invalid='ignore'):
-            D += 0.01
-            denominator = ((D ** (1 / (self._beta - 1))) * np.sum((np.float64(1.0) / D) ** (1 / (self._beta - 1))))
-        isnan = np.isnan(denominator)
-        if np.any(isnan):
-            self._weights = isnan.astype(int) / np.sum(isnan)
-        else:
-            self._weights = np.float64(1.0) / denominator
-        self._is_stable = False
-        assert self._weights.shape == (self._dim_cols,)
-        assert np.abs(np.sum(self._weights) - 1) < 0.0001
-
-
-class _TestAPInitPB(APInitPB):
-    """Do not use it. Special implementation of APInitPB for testing purposes only."""
-
-    def _new_cluster(self, label, data):
-        return _TestAWardPBCluster(label, data, self._p, self._beta)
 
 
 def test_symmetric_15points():
@@ -109,10 +71,11 @@ def test_500_random_matlab():
 def _my_vs_matlab(p, beta, threshold, data_path):
     data = np.loadtxt(data_path)
     data_file = "'" + os.path.abspath(data_path) + "'"
-    run_api_p_beta = _TestAPInitPB(data, p=p, beta=beta)
-    my_labels = run_api_p_beta()
-    my_weights = np.array([c._weights for c in run_api_p_beta.clusters])
-    my_centroids = np.array([c.centroid for c in run_api_p_beta.clusters]).astype(float)
+    run_api_pb = APInitPBMatlabCompatible(data, p=p, beta=beta)
+    my_labels = run_api_pb()
+    clusters = run_api_pb.cluster_structure.clusters
+    my_weights = np.array([c.weights for c in clusters])
+    my_centroids = np.array([c.centroid for c in clusters]).astype(float)
     # run matlab implementation
     matlab_result = matlab_connector('test_ap_init_pb', data_file, threshold, p, beta)
     matlab_labels = matlab_result['AnomalousLabels'].flatten().astype(int)
