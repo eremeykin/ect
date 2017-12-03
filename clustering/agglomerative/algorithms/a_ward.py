@@ -1,8 +1,6 @@
 import numpy as np
-import sys
 from clustering.agglomerative.nearest_neighbor import NearestNeighborChain
-from clustering.agglomerative.agglomerative_cluster import AWardCluster
-
+from clustering.agglomerative.agglomerative_cluster_structure import AWardClusterStructure
 
 class AWard:
     """ Implements AWard clustering algorithm.
@@ -18,49 +16,33 @@ class AWard:
         self._k_star = k_star
         self._alpha = alpha
         self._cluster_structure = cluster_structure
-        # self._dim_rows = sum((cluster.power for cluster in clusters))
-        # self._init_clusters = clusters
-        # self._clusters = []
-        # self._cluster_by_label = dict()
+        self._initial_cluster_count = cluster_structure.clusters_number
 
-    def check_criterion(self, cluster1, cluster2, cluster):
-        return (1 - self.alpha) * cluster.w < cluster1.w + cluster2.w
+    @classmethod
+    def from_labels(cls, data, labels, k_star=5):
+        cluster_structure = AWardClusterStructure.from_labels(data,labels)
+        return cls(cluster_structure, k_star)
 
-    def _get_pointer(self):
-        """Get the pointer which specifies where to stop according criteria"""
-        if self.k_star is not None:
-            pointer = len(self.merge_matrix) - self.k_star + 1
-            return pointer
-        else:
-            for pointer in range(0, len(self.merge_matrix) - 1):
-                c_label1, c_label2, c_label_new, dist = self.merge_matrix[pointer]
-                c_label1, c_label2, c_label_new = int(c_label1), int(c_label2), int(c_label_new)
-                if self.check_criterion(self._cluster_by_label[c_label1],
-                                        self._cluster_by_label[c_label2],
-                                        self._cluster_by_label[c_label_new]):
-                    return pointer
+    # def check_criterion(self, cluster1, cluster2, cluster):
+    #     return (1 - self._alpha) * cluster.w < cluster1.w + cluster2.w
+
+    def _stop(self, cluster1, cluster2, merged_cluster, clusters):
+        return len(clusters) <= self._k_star
 
     def __call__(self):
         """Run AWard clustering.
 
         :returns list of resulting clusters."""
-
-        run_nnc = NearestNeighborChain(self._init_clusters)
-        self._clusters, self.merge_matrix = run_nnc()
-        self._cluster_by_label = {cluster.label: cluster for cluster in self._clusters}
-        # find position where we had to stop according selected criterion: k_star or by formula 8
-        pointer = self._get_pointer()
-        merged = self.merge_matrix[:pointer, 0:2]  # - all clusters that had been merged before pointer
-        # pick to result clusters that are not merged
-        result_clusters = []
-        for i in range(0, pointer):
-            current_cluster = self.merge_matrix[pointer, 2]
-            if current_cluster not in merged:
-                result_clusters.append(self._cluster_by_label[int(current_cluster)])
-            pointer -= 1
-
-        result = np.full(fill_value=0, shape=self._dim_rows)
-        for c in range(0, len(result_clusters)):
-            cluster = result_clusters[c]
-            result[cluster.points_indices] = c
-        return np.array(result)
+        clusters = set(self._cluster_structure.clusters)
+        run_nnc = NearestNeighborChain(self._cluster_structure)
+        merge_array = run_nnc()
+        for cluster1, cluster2, merged_cluster, dist in merge_array:
+            if not self._stop(cluster1, cluster2, merged_cluster, clusters):
+                clusters.discard(cluster1)
+                clusters.discard(cluster2)
+                clusters.add(merged_cluster)
+            else:
+                break
+        self._cluster_structure.clear()
+        self._cluster_structure.add_all_clusters(clusters)
+        return self._cluster_structure.current_labels()

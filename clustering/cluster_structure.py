@@ -10,12 +10,21 @@ class ClusterStructure(ABC):
         :param int label: integer unique label of this cluster
         :param numpy.array data: of data on which the cluster is defined"""
 
-        def __init__(self, label, cluster_structure):
-            self._label = label
+        def __init__(self, cluster_structure, points_indices, with_setup=True):
             self._cluster_structure = cluster_structure
-            self._points_indices = np.empty((0, 1), dtype=int)  # np.array([], dtype=int)
-            self._centroid = None
-            self._is_stable = False
+            self._points_indices = points_indices
+            self._points_indices.flags.writeable = False
+            self._indices_tuple = tuple(points_indices)
+            self._hash = hash(self._indices_tuple)
+            if with_setup:
+                self._centroid = None
+                self._cluster_points = cluster_structure.data[points_indices]
+                self._setup()
+
+        @classmethod
+        @abstractmethod
+        def from_params(cls, cluster_structure, points_indices, *args, **kwargs):
+            pass
 
         @abstractmethod
         def dist_point_to_point(self, point1, point2):
@@ -30,18 +39,12 @@ class ClusterStructure(ABC):
             pass
 
         @abstractmethod
-        def _update(self):
-            """Updates this cluster after points assignment"""
+        def _setup(self):
             pass
 
         @property
         def cluster_structure(self):
             return self._cluster_structure
-
-        @property
-        def label(self):
-            """A unique label for cluster. It is Integer number."""
-            return self._label
 
         @property
         def points_indices(self):
@@ -50,57 +53,36 @@ class ClusterStructure(ABC):
             return self._points_indices
 
         @property
+        def cluster_points(self):
+            return self._cluster_points
+
+        @property
         def power(self):
             """ Number of points in this cluster"""
-            return len(self._points_indices)
+            return len(self._indices_tuple)  # I hope it is faster then self._points_indices
 
         @property
         def centroid(self):
-            """Centroid of this cluster
-             :raises CentroidUndefined: if this cluster is empty."""
-            if self._centroid is None:
-                raise ClusterStructure.Cluster.CentroidUndefinedException(
-                    'Centroid is undefined for empty cluster: {}' % self)
+            """Centroid of this cluster"""
             return self._centroid
 
-        @property
-        def is_stable(self):
-            """A cluster is stable if it must not be updated after last points assignment"""
-            return self._is_stable
-
-        # TODO think about points_data instead of points_indices
-        def set_points_and_update(self, points_indices):
-            """Add points to the cluster and update it.
-            -----------------------------------------------------------------------------
-            ATTENTION IT SUPPOSES THAT CLUSTER DO NOT DEPEND ON OTHER CLUSTERS AT ALL!!!
-            look for example at imwk_means and it's weights update
-
-            :param numpy.array points_indices: list of indices of points to add. Index is based on cluster data."""
-            # ATTENTION IT SUPPOSES THAT CLUSTER DO NOT DEPEND ON OTHER CLUSTERS AT ALL!!!
-            # look for example at imwk_means and it's weights update
-            if set(self._points_indices) == set(points_indices):
-                self._is_stable = True
-                return
-            self._points_indices = points_indices
-            self._update()
-
         def __hash__(self):
-            """Computes hash of cluster based on it's label only"""
-            return hash(self.label)
+            """Computes hash of cluster"""
+            return self._hash
 
         def __eq__(self, other):
             """Compares clusters by it's label only"""
             if type(other) is type(self):
-                if other.cluster_structure is not self.cluster_structure:
-                    raise BaseException("You defined two different cluster structures and try to compare clusters"
-                                        "within it. Are you sure this behaviour is expected?")
-                return other.label == self.label
+                # if other.cluster_structure is not self.cluster_structure:
+                # raise BaseException("You defined two different cluster structures and try to compare clusters"
+                #                     "within it. Are you sure this behaviour is expected?")
+                return self._indices_tuple == other._indices_tuple
             else:
                 return False
 
         def __str__(self):
             """Returns a string representation of cluster in the form of Cluster {#}"""
-            return "Cluster {}".format(self.label)
+            return "Cluster: {}".format(self._points_indices)
 
         def __repr__(self):
             return str(self)
@@ -110,18 +92,27 @@ class ClusterStructure(ABC):
             pass
 
     def __init__(self, data):
-        self._clusters_dict = dict()
+        self._clusters = set()
         self._data = data
+        self._data.flags.writeable = False
         self._dim_rows = self._data.shape[0]
         self._dim_cols = self._data.shape[1]
-        self._cluster_labeler = count()
 
-    @abstractmethod
-    def _make_new_cluster(self, label):
-        pass
+    @classmethod
+    def from_labels(cls, data, labels):
+        result_cs = cls(data)
+        index = np.arange(0, len(labels))
+        for unique_label in np.unique(labels):
+            new_cluster = result_cs.release_new_cluster(index[labels == unique_label])
+            result_cs.add_cluster(new_cluster)
+        return result_cs
 
     @abstractmethod
     def dist_point_to_point(self, point1, point2):
+        pass
+
+    @abstractmethod
+    def release_new_cluster(self, points_indices):
         pass
 
     @property
@@ -136,35 +127,38 @@ class ClusterStructure(ABC):
 
     @property
     def data(self):
-        """Data on which cluster structure is defined"""
-        return self._data  # TODO may be I should return a copy? Is it too costly?
+        """Data on which cluster structure is defined. It is not writeable."""
+        return self._data
 
     @property
     def clusters_number(self):
-        return len(self._clusters_dict)
+        return len(self._clusters)
 
     @property
     def clusters(self):
-        return self._clusters_dict.values()
+        return frozenset(self._clusters)
 
-    def make_new_cluster(self):
-        new_label = next(self._cluster_labeler)
-        new_cluster = self._make_new_cluster(new_label)
-        self._clusters_dict[new_label] = new_cluster
-        return new_cluster
+    def add_cluster(self, cluster):
+        assert cluster.cluster_structure is self
+        assert cluster.cluster_structure.data is self.data
+        self._clusters.add(cluster)
 
-    def del_cluster(self, cluster_label):
-        if cluster_label in self._clusters_dict:
-            del self._clusters_dict[cluster_label]
-        else:
-            raise ClusterStructure.DeleteClusterException("Can't delete cluster {} "
-                                                          "because there is no such cluster in current ")
+    def add_all_clusters(self, set_of_clusters):
+        # assert all(c.cluster_structure is self for c in set_of_clusters)
+        assert all(c.cluster_structure.data is self.data is self.data for c in set_of_clusters)
+        self._clusters.update(set_of_clusters)
+
+    def del_cluster(self, cluster):
+        self._clusters.remove(cluster)
+
+    def clear(self):
+        self._clusters = set()
 
     def current_labels(self):
         """Calculates and returns cluster structure represented by labels of
         each point"""
-        labels = np.zeros(self._dim_rows)
-        for label, cluster in self._clusters_dict.items():
+        labels = np.zeros(self._dim_rows, dtype=int)
+        for label, cluster in enumerate(self._clusters):
             labels[cluster.points_indices] = label
         return labels
 

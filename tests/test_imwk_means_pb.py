@@ -5,20 +5,19 @@ from tests.parameters import DATA_DIR
 import numpy as np
 from sklearn.cluster import KMeans as sklearnKMeans
 from tests.tools import transformation_exists, matlab_connector, array_equals_up_to_order
-from tests.test_ap_init_pb import _TestAPInitPB
-from clustering.agglomerative.agglomerative_cluster import AWardPBCluster
 import os
-
+from clustering.pattern_initialization.ap_init_pb_matlab import APInitPBMatlabCompatible
+from clustering.agglomerative.agglomerative_cluster_structure import IMWKMeansClusterStructureMatlabCompatible
 
 def test_iris_sklearn():
     p, beta = 2, 0
     data = np.loadtxt('{}iris.pts'.format(DATA_DIR))
     run_ap_init_pb = APInitPB(data, p, beta)
     run_ap_init_pb()
-    clusters = run_ap_init_pb.clusters
+    clusters = run_ap_init_pb.cluster_structure.clusters
     centroids = np.array([cluster.centroid for cluster in clusters])
     k_means = sklearnKMeans(n_clusters=len(clusters), n_init=1, init=centroids, algorithm='full').fit(data)
-    run_imwk_means = IMWKMeansPB(clusters, p, beta)
+    run_imwk_means = IMWKMeansPB(run_ap_init_pb.cluster_structure)
     imwk_means_result = run_imwk_means()
     assert transformation_exists(k_means.labels_, imwk_means_result)
 
@@ -28,10 +27,10 @@ def test_symmetric_15points():
     data = np.loadtxt('{}symmetric_15points.pts'.format(DATA_DIR))
     run_ap_init_pb = APInitPB(data, p, beta)
     run_ap_init_pb()
-    clusters = run_ap_init_pb.clusters
+    clusters = run_ap_init_pb.cluster_structure.clusters
     centroids = np.array([cluster.centroid for cluster in clusters])
     k_means = sklearnKMeans(n_clusters=len(clusters), n_init=1, init=centroids, algorithm='full').fit(data)
-    run_imwk_means = IMWKMeansPB(clusters, p, beta)
+    run_imwk_means = IMWKMeansPB(run_ap_init_pb.cluster_structure)
     imwk_means_result = run_imwk_means()
     assert transformation_exists(k_means.labels_, imwk_means_result)
 
@@ -41,10 +40,10 @@ def test_500_random():
     data = np.loadtxt('{}data500ws.pts'.format(DATA_DIR))
     run_ap_init_pb = APInitPB(data, p, beta)
     run_ap_init_pb()
-    clusters = run_ap_init_pb.clusters
+    clusters = run_ap_init_pb.cluster_structure.clusters
     centroids = np.array([cluster.centroid for cluster in clusters])
     k_means = sklearnKMeans(n_clusters=len(clusters), n_init=1, init=centroids, algorithm='full').fit(data)
-    run_imwk_means = IMWKMeansPB(clusters, p, beta)
+    run_imwk_means = IMWKMeansPB(run_ap_init_pb.cluster_structure)
     imwk_means_result = run_imwk_means()
     assert transformation_exists(k_means.labels_, imwk_means_result)
 
@@ -63,59 +62,16 @@ def _my_vs_matlab(p, beta, threshold, data_path):
     data = np.loadtxt(data_path)
     data_file = "'" + os.path.abspath(data_path) + "'"
     # run my implementation
-    run_ap_init_pb = _TestAPInitPB(data, p=p, beta=beta)
+    run_ap_init_pb = APInitPBMatlabCompatible(data, p=p, beta=beta)
     init_labels = run_ap_init_pb()
-    clusters = run_ap_init_pb.clusters
-
-    def get_mean_D():
-        D_list = []
-        for cluster in clusters:
-            # think twice! Cluser may not be updated yet
-            cluster_points = cluster._data[cluster._points_indices]
-            cluster_centroid = minkowski_center(cluster_points, cluster._p)
-            cluster_D = np.sum(np.abs(cluster_points - cluster_centroid) ** cluster._p, axis=0).astype(np.float64)
-            D_list.append(cluster_D)
-        D_array = np.array(D_list)
-        return np.mean(D_array)
-
-    class Mock:
-
-        def __init__(self, cluster):
-            self.clst = cluster
-
-        def update(self):
-            cluster_points = self.clst._data[self.clst._points_indices]
-            self.clst._centroid = minkowski_center(cluster_points, self.clst._p)
-            # weights update (as per 7)
-            D = np.sum(np.abs(cluster_points - self.clst.centroid) ** self.clst._p, axis=0).astype(np.float64)
-            with np.errstate(divide='ignore', invalid='ignore'):
-                D += get_mean_D()
-                denominator = ((D ** (1 / (self.clst._beta - 1))) * np.sum((np.float64(1.0) / D) ** (1 / (self.clst._beta - 1))))
-            isnan = np.isnan(denominator)
-            if np.any(isnan):
-                self.clst._weights = isnan.astype(int) / np.sum(isnan)
-            else:
-                self.clst._weights = np.float64(1.0) / denominator
-            self.clst._is_stable = False
-            assert self.clst._weights.shape == (self.clst._dim_cols,)
-            assert np.abs(np.sum(self.clst._weights) - 1) < 0.0001
-
-    for cluster in clusters:
-        cluster._update = Mock(cluster).update
-
-    def new_distance_formula(point1, point2, weights, p, beta):
-        return np.sum((np.abs(point1 - point2) ** p) * (weights ** beta)) ** (1/p)
-
-    AWardPBCluster.distance_formula = new_distance_formula
-
-
-    run_imwk_means = IMWKMeansPB(clusters, p, beta)
+    clusters = run_ap_init_pb.cluster_structure.clusters
+    new_cluster_structure = IMWKMeansClusterStructureMatlabCompatible(data, p, beta)
+    new_cluster_structure.add_all_clusters(clusters)
+    run_imwk_means = IMWKMeansPB(new_cluster_structure)
     my_labels = run_imwk_means()
-
-    clusters[1]._update()
-
-    my_weights = np.array([c._weights for c in run_imwk_means.clusters])
-    my_centroids = np.array([c.centroid for c in run_imwk_means.clusters]).astype(float)
+    result_clusters = run_imwk_means.cluster_structure.clusters
+    my_weights = np.array([c.weights for c in result_clusters])
+    my_centroids = np.array([c.centroid for c in result_clusters]).astype(float)
     # run matlab implementation
     matlab_result = matlab_connector('test_imwk_means_pb', data_file, threshold, p, beta)
     matlab_labels = matlab_result['Labels'].flatten().astype(int)

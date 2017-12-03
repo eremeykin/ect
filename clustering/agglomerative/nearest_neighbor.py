@@ -1,5 +1,4 @@
 import numpy as np
-from clustering.agglomerative.agglomerative_cluster import AgglomerativeCluster, AWardCluster
 
 
 class NearestNeighborChain:
@@ -10,17 +9,16 @@ class NearestNeighborChain:
     :param list clusters: list of AgglomerativeCluster, initial state of algorithm
     """
 
-    def __init__(self, cluster_structure, clusters):
-        self._cluster_structure = cluster_structure
-        self._clusters = clusters
-        self._remaining_clusters = self._clusters[:]
-        self._initial_clusters_number = len(clusters)
-        self.merge_matrix = np.empty(shape=(0, 4), dtype=float)
+    def __init__(self, cluster_structure):
+        self._cs = cluster_structure
+        self._clusters = cluster_structure.clusters
+        self._initial_clusters_number = cluster_structure.clusters_number
+        self._merge_array = []
 
     def _find_nearest(self, base_cluster):
         nearest = None
         min_dist = np.inf
-        for cluster in self._remaining_clusters:
+        for cluster in self._cs.clusters:
             if cluster == base_cluster:
                 continue
             dist = base_cluster.dist_cluster_to_cluster(cluster)
@@ -37,29 +35,23 @@ class NearestNeighborChain:
         3 column - name of new cluster,
         4 column - AWard distance between clusters to merge
         :rtype: """
-        label = self._initial_clusters_number
         stack = []
-        while label < 2 * self._initial_clusters_number - 1:
+        # while label < 2 * self._initial_clusters_number - 1:
+        while self._cs.clusters_number > 1:
             if not stack:
-                random_cluster = self._clusters[-1]
-                stack.append(random_cluster)
+                arbitrary_cluster = next(iter(self._cs.clusters))
+                stack.append(arbitrary_cluster)
             top = stack[-1]
             nearest, dist = self._find_nearest(top)
             if nearest is None:
                 break
             if nearest in stack:
-                self.merge_matrix = np.vstack((self.merge_matrix, np.array([top.label, nearest.label, label, dist])))
+                merged = self._cs.merge(top, nearest)
+                self._merge_array.append([top, nearest, merged, dist])
                 stack.remove(top)
                 stack.remove(nearest)
-                new_cluster = AWardCluster.merge(top, nearest, label)
-                label += 1
-                self._clusters.append(new_cluster)
-                self._remaining_clusters.remove(top)
-                self._remaining_clusters.remove(nearest)
-                self._remaining_clusters.append(new_cluster)
             else:
                 stack.append(nearest)
-        # sort merge_matrix by distance (last column)
-        sort_indices = self.merge_matrix[:, -1].argsort()
-        self.merge_matrix = self.merge_matrix[sort_indices]
-        return self._clusters, self.merge_matrix
+        # sort merge_array by distance
+        self._merge_array.sort(key=lambda elem: elem[-1])
+        return self._merge_array

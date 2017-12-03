@@ -69,10 +69,13 @@ def test_500_random_matlab():
 
 
 def _my_vs_matlab(p, beta, threshold, data_path):
+    from time import time
+    start = time()
     data = np.loadtxt(data_path)
     data_file = "'" + os.path.abspath(data_path) + "'"
     run_api_pb = APInitPBMatlabCompatible(data, p=p, beta=beta)
     my_labels = run_api_pb()
+    end = time()
     clusters = run_api_pb.cluster_structure.clusters
     my_weights = np.array([c.weights for c in clusters])
     my_centroids = np.array([c.centroid for c in clusters]).astype(float)
@@ -81,7 +84,8 @@ def _my_vs_matlab(p, beta, threshold, data_path):
     matlab_labels = matlab_result['AnomalousLabels'].flatten().astype(int)
     matlab_weights = matlab_result['InitW']
     matlab_centroids = matlab_result['InitZ']
-
+    end2 = time()
+    print("all = {}, my = {}".format(end2 - start, end - start))
     return matlab_weights, my_weights, matlab_centroids, my_centroids, matlab_labels, my_labels
 
 
