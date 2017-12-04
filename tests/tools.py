@@ -1,11 +1,19 @@
-MATLAB_PATH = "/home/eremeykin/Matlab2015b/bin/matlab"
-SHARED_MATLAB = "/media/d_disk/projects/Clustering/ect/tests/shared/matlab"
 import subprocess
 import re
 import numpy as np
+import os
+
+MATLAB_PATH = "/home/eremeykin/Matlab2015b/bin/matlab"
+SHARED_MATLAB = "/media/d_disk/projects/Clustering/ect/tests/shared/matlab"
+
+
+def rp(path):
+    return os.path.join(os.path.dirname(__file__), path)
 
 
 def array_equals_up_to_order(array1, array2, atol=1.e-5):
+    if array1.shape != array2.shape:
+        return False
     array1 = array1[array1[:, 0].argsort()]
     array2 = array2[array2[:, 0].argsort()]
     return np.allclose(array1, array2, atol=atol)

@@ -98,18 +98,16 @@ class ClusterStructure(ABC):
         self._dim_rows = self._data.shape[0]
         self._dim_cols = self._data.shape[1]
 
-    @classmethod
-    def from_labels(cls, data, labels):
-        result_cs = cls(data)
-        index = np.arange(0, len(labels))
-        for unique_label in np.unique(labels):
-            new_cluster = result_cs.release_new_cluster(index[labels == unique_label])
-            result_cs.add_cluster(new_cluster)
-        return result_cs
-
     @abstractmethod
     def dist_point_to_point(self, point1, point2):
         pass
+
+    def release_new_batch(self, indices_batch):
+        new_clusters = set()
+        for indices in indices_batch:
+            new_cluster = self.release_new_cluster(indices)
+            new_clusters.add(new_cluster)
+        return new_clusters
 
     @abstractmethod
     def release_new_cluster(self, points_indices):
@@ -145,7 +143,7 @@ class ClusterStructure(ABC):
 
     def add_all_clusters(self, set_of_clusters):
         # assert all(c.cluster_structure is self for c in set_of_clusters)
-        assert all(c.cluster_structure.data is self.data is self.data for c in set_of_clusters)
+        assert all(c.cluster_structure.data is self.data for c in set_of_clusters)
         self._clusters.update(set_of_clusters)
 
     def del_cluster(self, cluster):
