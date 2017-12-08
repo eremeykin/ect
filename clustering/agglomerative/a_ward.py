@@ -1,6 +1,8 @@
 import numpy as np
-from clustering.agglomerative.nearest_neighbor import NearestNeighborChain
-from clustering.agglomerative.agglomerative_cluster_structure import AWardClusterStructure
+from clustering.agglomerative.utils.agglomerative_cluster_structure import AWardClusterStructure
+
+from clustering.agglomerative.utils.nearest_neighbor import NearestNeighborChain
+
 
 class AWard:
     """ Implements AWard clustering algorithm."""

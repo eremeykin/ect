@@ -216,7 +216,7 @@ class AWardPBClusterStructure(AgglomerativeClusterStructure):
             beta = self._cluster_structure.beta
             na, nb = self.power, cluster.power
             wa, wb = self.weights, cluster.weights
-            delta = self.centroid - cluster.centroid
+            delta = np.abs(self.centroid - cluster.centroid)
             weight_multiplier = ((wa + wb) / 2) ** beta
             distance = ((na * nb) / (na + nb)) * (sum(weight_multiplier * (delta ** p)))
             return distance
@@ -291,7 +291,34 @@ class AWardPBClusterStructure(AgglomerativeClusterStructure):
 
     def merge(self, cluster1, cluster2):
         """Merges two clusters into one."""
-        raise NotImplemented
+        p, beta = self._p, self._beta
+        self.del_cluster(cluster1)
+        self.del_cluster(cluster2)
+
+        assert not (cluster1 == cluster2)  # doesn't work?
+        assert cluster1.cluster_structure is cluster2.cluster_structure
+
+        new_points_indices = np.append(cluster1.points_indices, cluster2.points_indices)
+        new_points = self._data[new_points_indices]
+        new_centroid = minkowski_center(new_points, self.p)
+
+        D = np.sum(np.abs(new_points - new_centroid) ** p, axis=0).astype(np.float64)
+        with np.errstate(divide='ignore', invalid='ignore'):
+            D += 0.0001
+            denominator = ((D ** (1 / (beta - 1))) * np.sum((np.float64(1.0) / D) ** (1 / (beta - 1))))
+        isnan = np.isnan(denominator)
+        if np.any(isnan):
+            new_weights = isnan.astype(int) / np.sum(isnan)
+        else:
+            new_weights = np.float64(1.0) / denominator
+
+        new_cluster = AWardPBClusterStructure.Cluster.from_params(self, new_points_indices,
+                                                                weights=new_weights,
+                                                                centroid=new_centroid)
+        self.add_cluster(new_cluster)
+        return new_cluster
+
+        # raise NotImplemented
 
 
 class AWardPBClusterStructureMatlabCompatible(AWardPBClusterStructure):

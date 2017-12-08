@@ -1,5 +1,6 @@
 import numpy as np
-from clustering.agglomerative.agglomerative_cluster_structure import AWardClusterStructure
+
+from clustering.agglomerative.utils.agglomerative_cluster_structure import AWardClusterStructure
 
 
 class APInit:

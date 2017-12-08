@@ -1,12 +1,14 @@
-import pytest
-from collections import namedtuple
-from sklearn.cluster import AgglomerativeClustering as sklearn_clustering
-import numpy as np
 import os
-from tests.tools import rp, matlab_connector
-from clustering.pattern_initialization.ap_init import APInit
+from collections import namedtuple
+
+import numpy as np
+import pytest
+from sklearn.cluster import AgglomerativeClustering as sklearn_clustering
+
+from clustering.agglomerative.utils.agglomerative_cluster_structure import AWardClusterStructure
 from clustering.ik_means.ik_means import IKMeans
-from clustering.agglomerative.agglomerative_cluster_structure import AWardClusterStructure
+from clustering.pattern_initialization.ap_init import APInit
+from tests.tools import rp, matlab_connector
 
 DataKStarRes = namedtuple('DataKStarRes', 'data k_star res')
 DataCSKStarRes = namedtuple('DataKStarRes', 'data cs k_star res')

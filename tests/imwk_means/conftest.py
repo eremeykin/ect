@@ -1,12 +1,14 @@
-import pytest
-from collections import namedtuple
-import numpy as np
 import os
-from tests.tools import matlab_connector, rp
+from collections import namedtuple
+
+import numpy as np
+import pytest
+from sklearn.cluster import KMeans as sklearnKMeans
+
+from clustering.agglomerative.utils.agglomerative_cluster_structure import IMWKMeansClusterStructureMatlabCompatible
 from clustering.pattern_initialization.ap_init_pb import APInitPB
 from clustering.pattern_initialization.ap_init_pb_matlab import APInitPBMatlabCompatible
-from clustering.agglomerative.agglomerative_cluster_structure import IMWKMeansClusterStructureMatlabCompatible
-from sklearn.cluster import KMeans as sklearnKMeans
+from tests.tools import matlab_connector, rp
 
 DataCSPBRes = namedtuple('DataCSPBRes', 'data cs p beta res')
 DataPBRes = namedtuple('DataCSPBRes', 'data p beta res')
