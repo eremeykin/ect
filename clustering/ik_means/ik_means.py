@@ -1,6 +1,6 @@
 import numpy as np
 
-from clustering.agglomerative.utils.agglomerative_cluster_structure import AWardPBClusterStructure
+from clustering.agglomerative.utils.a_ward_pb_cluster_structure import AWardPBClusterStructure
 
 
 class IKMeans:
@@ -10,6 +10,7 @@ class IKMeans:
         self._cluster_structure = cluster_structure
         self._data = cluster_structure.data
         self._completed = False
+
     #
     # @classmethod
     # def from_labels(cls, cluster_structure_class, data, labels, centroids, weights):
@@ -28,7 +29,7 @@ class IKMeans:
             cluster_points = {cluster: [] for cluster in clusters}
 
             for index, point in enumerate(self._data):
-                nearest_cluster = min(clusters, key=lambda c: c.dist_point_to_cluster(point))
+                nearest_cluster = min(clusters, key=lambda c: self._cluster_structure.dist_point_to_cluster(point, c))
                 cluster_points[nearest_cluster].append(index)
 
             new_clusters = self._cluster_structure.release_new_batch(

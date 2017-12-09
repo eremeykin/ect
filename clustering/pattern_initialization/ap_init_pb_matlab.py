@@ -1,4 +1,4 @@
-from clustering.agglomerative.utils.agglomerative_cluster_structure import AWardPBClusterStructureMatlabCompatible
+from clustering.agglomerative.utils.matlab_compatible import AWardPBClusterStructureMatlabCompatible
 from clustering.common import minkowski_center
 from clustering.pattern_initialization.ap_init_pb import APInitPB
 

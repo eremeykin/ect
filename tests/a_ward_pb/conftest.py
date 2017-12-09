@@ -4,7 +4,7 @@ from collections import namedtuple
 import numpy as np
 import pytest
 
-from clustering.agglomerative.utils.agglomerative_cluster_structure import IMWKMeansClusterStructureMatlabCompatible
+from clustering.agglomerative.utils.matlab_compatible import IMWKMeansClusterStructureMatlabCompatible
 from clustering.ik_means.ik_means import IKMeans
 from clustering.pattern_initialization.ap_init_pb_matlab import APInitPBMatlabCompatible
 from tests.tools import rp, matlab_connector

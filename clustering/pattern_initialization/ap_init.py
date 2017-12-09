@@ -1,6 +1,6 @@
 import numpy as np
 
-from clustering.agglomerative.utils.agglomerative_cluster_structure import AWardClusterStructure
+from clustering.agglomerative.utils.a_ward_cluster_structure import AWardClusterStructure
 
 
 class APInit:
@@ -51,11 +51,12 @@ class APInit:
 
             for loop_control in range(APInit._MAX_LOOPS):
                 dist_point_to_origin = np.apply_along_axis(
-                    func1d=lambda point: anomalous_cluster.dist_point_to_point(point, self._origin),
+                    func1d=lambda point: self._cluster_structure.dist_point_to_point(point,
+                                                                                     self._origin, anomalous_cluster),
                     axis=1, arr=current_data)
 
                 dist_point_to_anomalous_centroid = np.apply_along_axis(
-                    func1d=lambda point: anomalous_cluster.dist_point_to_cluster(point),
+                    func1d=lambda point: self._cluster_structure.dist_point_to_cluster(point, anomalous_cluster),
                     axis=1, arr=current_data)
 
                 anomaly = dist_point_to_origin >= dist_point_to_anomalous_centroid

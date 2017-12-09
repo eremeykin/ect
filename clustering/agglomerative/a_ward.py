@@ -1,5 +1,5 @@
 import numpy as np
-from clustering.agglomerative.utils.agglomerative_cluster_structure import AWardClusterStructure
+from clustering.agglomerative.utils.a_ward_cluster_structure import AWardClusterStructure
 
 from clustering.agglomerative.utils.nearest_neighbor import NearestNeighborChain
 

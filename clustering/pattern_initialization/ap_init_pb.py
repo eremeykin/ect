@@ -1,4 +1,4 @@
-from clustering.agglomerative.utils.agglomerative_cluster_structure import AWardPBClusterStructure
+from clustering.agglomerative.utils.a_ward_pb_cluster_structure import AWardPBClusterStructure
 from clustering.common import minkowski_center
 from clustering.pattern_initialization.ap_init import APInit
 

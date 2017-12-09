@@ -21,7 +21,7 @@ class NearestNeighborChain:
         for cluster in self._cs.clusters:
             if cluster == base_cluster:
                 continue
-            dist = base_cluster.dist_cluster_to_cluster(cluster)
+            dist = self._cs.dist_cluster_to_cluster(base_cluster, cluster)
             if dist < min_dist:
                 min_dist = dist
                 nearest = cluster

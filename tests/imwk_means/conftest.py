@@ -5,7 +5,7 @@ import numpy as np
 import pytest
 from sklearn.cluster import KMeans as sklearnKMeans
 
-from clustering.agglomerative.utils.agglomerative_cluster_structure import IMWKMeansClusterStructureMatlabCompatible
+from clustering.agglomerative.utils.matlab_compatible import IMWKMeansClusterStructureMatlabCompatible
 from clustering.pattern_initialization.ap_init_pb import APInitPB
 from clustering.pattern_initialization.ap_init_pb_matlab import APInitPBMatlabCompatible
 from tests.tools import matlab_connector, rp

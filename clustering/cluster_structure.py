@@ -1,50 +1,21 @@
 from abc import ABC, abstractmethod
 import numpy as np
-from itertools import count
 
 
 class ClusterStructure(ABC):
-    class Cluster(ABC):
+    class Cluster:
         """Base immutable cluster
 
         :param int label: integer unique label of this cluster
         :param numpy.array data: of data on which the cluster is defined"""
 
         def __init__(self, cluster_structure, points_indices, with_setup=True):
-            self._cluster_structure = cluster_structure
             self._points_indices = points_indices
             self._points_indices.flags.writeable = False
             self._indices_tuple = tuple(points_indices)
             self._hash = hash(self._indices_tuple)
-            if with_setup:
-                self._centroid = None
-                self._cluster_points = cluster_structure.data[points_indices]
-                self._setup()
-
-        @classmethod
-        @abstractmethod
-        def from_params(cls, cluster_structure, points_indices, *args, **kwargs):
-            pass
-
-        @abstractmethod
-        def dist_point_to_point(self, point1, point2):
-            pass
-
-        @abstractmethod
-        def dist_point_to_cluster(self, point):
-            pass
-
-        @abstractmethod
-        def dist_cluster_to_cluster(self, cluster):
-            pass
-
-        @abstractmethod
-        def _setup(self):
-            pass
-
-        @property
-        def cluster_structure(self):
-            return self._cluster_structure
+            self._centroid = None
+            self._cluster_points = cluster_structure.data[points_indices]
 
         @property
         def points_indices(self):
@@ -73,9 +44,6 @@ class ClusterStructure(ABC):
         def __eq__(self, other):
             """Compares clusters by it's label only"""
             if type(other) is type(self):
-                # if other.cluster_structure is not self.cluster_structure:
-                # raise BaseException("You defined two different cluster structures and try to compare clusters"
-                #                     "within it. Are you sure this behaviour is expected?")
                 return self._indices_tuple == other._indices_tuple
             else:
                 return False
@@ -99,7 +67,15 @@ class ClusterStructure(ABC):
         self._dim_cols = self._data.shape[1]
 
     @abstractmethod
-    def dist_point_to_point(self, point1, point2):
+    def dist_point_to_point(self, point1, point2, cluster_of_point1=None):
+        pass
+
+    @abstractmethod
+    def dist_point_to_cluster(self, point, cluster):
+        pass
+
+    @abstractmethod
+    def dist_cluster_to_cluster(self, cluster1, cluster2):
         pass
 
     def release_new_batch(self, indices_batch):
@@ -137,13 +113,9 @@ class ClusterStructure(ABC):
         return frozenset(self._clusters)
 
     def add_cluster(self, cluster):
-        assert cluster.cluster_structure is self
-        assert cluster.cluster_structure.data is self.data
         self._clusters.add(cluster)
 
     def add_all_clusters(self, set_of_clusters):
-        # assert all(c.cluster_structure is self for c in set_of_clusters)
-        assert all(c.cluster_structure.data is self.data for c in set_of_clusters)
         self._clusters.update(set_of_clusters)
 
     def del_cluster(self, cluster):

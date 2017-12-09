@@ -11,10 +11,10 @@ class AWardPB:
         n_clusters = len(clusters)
         distance_matrix = np.full((n_clusters, n_clusters), fill_value=np.inf)
         for i in range(n_clusters):
-            for j in range(i+1, n_clusters):
+            for j in range(i + 1, n_clusters):
                 c1 = clusters[i]
                 c2 = clusters[j]
-                distance_matrix[i, j] = c1.dist_cluster_to_cluster(c2)
+                distance_matrix[i, j] = self._cluster_structure.dist_cluster_to_cluster(c1, c2)
         minimum = distance_matrix.argmin()  # in flatten array
         min_row = minimum // n_clusters
         min_col = minimum % n_clusters
