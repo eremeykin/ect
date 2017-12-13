@@ -1,8 +1,9 @@
-from clustering.pattern_initialization.ap_init_pb import APInitPB
-from clustering.pattern_initialization.ap_init_pb_matlab import APInitPBMatlabCompatible
-from tests.tools import transformation_exists
 import numpy as np
-from tests.tools import matlab_connector, array_equals_up_to_order
+from clustering.agglomerative.pattern_initialization.ap_init_pb_matlab import APInitPBMatlabCompatible
+
+from clustering.agglomerative.pattern_initialization.ap_init_pb import APInitPB
+from tests.tools import array_equals_up_to_order
+from tests.tools import transformation_exists
 
 
 def test_ap_init_pb(data_pb_res):

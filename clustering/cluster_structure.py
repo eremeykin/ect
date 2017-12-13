@@ -1,8 +1,7 @@
-from abc import ABC, abstractmethod
 import numpy as np
 
 
-class ClusterStructure(ABC):
+class ClusterStructure:
     class Cluster:
         """Base immutable cluster
 
@@ -66,18 +65,6 @@ class ClusterStructure(ABC):
         self._dim_rows = self._data.shape[0]
         self._dim_cols = self._data.shape[1]
 
-    @abstractmethod
-    def dist_point_to_point(self, point1, point2, cluster_of_point1=None):
-        pass
-
-    @abstractmethod
-    def dist_point_to_cluster(self, point, cluster):
-        pass
-
-    @abstractmethod
-    def dist_cluster_to_cluster(self, cluster1, cluster2):
-        pass
-
     def release_new_batch(self, indices_batch):
         new_clusters = set()
         for indices in indices_batch:
@@ -85,9 +72,8 @@ class ClusterStructure(ABC):
             new_clusters.add(new_cluster)
         return new_clusters
 
-    @abstractmethod
     def release_new_cluster(self, points_indices):
-        pass
+        return ClusterStructure.Cluster(self, points_indices)
 
     @property
     def dim_cols(self):

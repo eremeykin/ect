@@ -3,11 +3,11 @@ from collections import namedtuple
 
 import numpy as np
 import pytest
+from clustering.agglomerative.ik_means.ik_means import IKMeans
 from sklearn.cluster import AgglomerativeClustering as sklearn_clustering
 
+from clustering.agglomerative.pattern_initialization.ap_init import APInit
 from clustering.agglomerative.utils.a_ward_cluster_structure import AWardClusterStructure
-from clustering.ik_means.ik_means import IKMeans
-from clustering.pattern_initialization.ap_init import APInit
 from tests.tools import rp, matlab_connector
 
 DataKStarRes = namedtuple('DataKStarRes', 'data k_star res')

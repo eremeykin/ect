@@ -3,11 +3,11 @@ from collections import namedtuple
 
 import numpy as np
 import pytest
+from clustering.agglomerative.pattern_initialization.ap_init_pb_matlab import APInitPBMatlabCompatible
 from sklearn.cluster import KMeans as sklearnKMeans
 
+from clustering.agglomerative.pattern_initialization.ap_init_pb import APInitPB
 from clustering.agglomerative.utils.matlab_compatible import IMWKMeansClusterStructureMatlabCompatible
-from clustering.pattern_initialization.ap_init_pb import APInitPB
-from clustering.pattern_initialization.ap_init_pb_matlab import APInitPBMatlabCompatible
 from tests.tools import matlab_connector, rp
 
 DataCSPBRes = namedtuple('DataCSPBRes', 'data cs p beta res')

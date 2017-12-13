@@ -1,10 +1,12 @@
-import pytest
-from collections import namedtuple
-import numpy as np
 import os
-from tests.tools import matlab_connector, rp
-from clustering.pattern_initialization.ap_init_pb import APInit
+from collections import namedtuple
+
+import numpy as np
+import pytest
 from sklearn.cluster import KMeans as sklearnKMeans
+
+from clustering.agglomerative.pattern_initialization.ap_init_pb import APInit
+from tests.tools import matlab_connector, rp
 
 DataCSRes = namedtuple('DataCSRes', 'data cs res')
 DataRes = namedtuple('DataCSRes', 'data res')

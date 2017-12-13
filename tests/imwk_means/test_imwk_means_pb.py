@@ -1,6 +1,7 @@
-from clustering.ik_means.ik_means import IKMeans
 import numpy as np
-from tests.tools import transformation_exists, matlab_connector, array_equals_up_to_order
+
+from clustering.agglomerative.ik_means.ik_means import IKMeans
+from tests.tools import transformation_exists, array_equals_up_to_order
 
 
 def test_imwk_means(data_cs_pb_res):

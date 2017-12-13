@@ -1,4 +1,4 @@
-from clustering.ik_means.ik_means import IKMeans
+from clustering.agglomerative.ik_means.ik_means import IKMeans
 from tests.tools import transformation_exists
 
 

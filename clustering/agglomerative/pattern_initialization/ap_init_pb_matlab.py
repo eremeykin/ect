@@ -1,6 +1,5 @@
+from clustering.agglomerative.pattern_initialization.ap_init_pb import APInitPB
 from clustering.agglomerative.utils.matlab_compatible import AWardPBClusterStructureMatlabCompatible
-from clustering.common import minkowski_center
-from clustering.pattern_initialization.ap_init_pb import APInitPB
 
 
 class APInitPBMatlabCompatible(APInitPB):

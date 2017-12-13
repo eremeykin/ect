@@ -14,6 +14,7 @@ class _Cluster(object):
             self.label = _Cluster._last_label
         self.data = data
         cluster = data[[global_indexes]]
+
         norm = cluster - cluster.mean(axis=0)
         self.cluster = norm
         U, s, Vt = np.linalg.svd(norm)  # principal components

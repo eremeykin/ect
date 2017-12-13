@@ -1,9 +1,10 @@
 from clustering.cluster_structure import ClusterStructure
+from clustering.agglomerative.utils.agglomerative_cluster_structure import AgglomerativeClusterStructure
 from scipy.spatial.distance import sqeuclidean as se_dist
 import numpy as np
 
 
-class AWardClusterStructure(ClusterStructure):
+class AWardClusterStructure(AgglomerativeClusterStructure):
     """Cluster structure for A-Ward agglomerative algorithm."""
 
     class Cluster(ClusterStructure.Cluster):

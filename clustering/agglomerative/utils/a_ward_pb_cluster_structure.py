@@ -1,9 +1,10 @@
 from clustering.common import minkowski_center
 import numpy as np
 from clustering.cluster_structure import ClusterStructure
+from clustering.agglomerative.utils.agglomerative_cluster_structure import AgglomerativeClusterStructure
 
 
-class AWardPBClusterStructure(ClusterStructure):
+class AWardPBClusterStructure(AgglomerativeClusterStructure):
     """Cluster structure for A-Ward agglomerative clustering with p and beta parameters"""
 
     class Cluster(ClusterStructure.Cluster):

@@ -1,9 +1,10 @@
-import numpy as np
-
-from clustering.divisive.direction import Direction
-from clustering.pattern_initialization.anomalous_cluster import anomalous_cluster as ap_init
-from sklearn.cluster import KMeans
 from collections import Counter as Counter
+
+import numpy as np
+from sklearn.cluster import KMeans
+
+from clustering.agglomerative.pattern_initialization import anomalous_cluster as ap_init
+from clustering.divisive.direction import Direction
 
 
 class _Cluster:

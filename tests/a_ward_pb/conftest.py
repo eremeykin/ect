@@ -3,10 +3,10 @@ from collections import namedtuple
 
 import numpy as np
 import pytest
+from clustering.agglomerative.ik_means.ik_means import IKMeans
 
+from clustering.agglomerative.pattern_initialization.ap_init_pb_matlab import APInitPBMatlabCompatible
 from clustering.agglomerative.utils.matlab_compatible import IMWKMeansClusterStructureMatlabCompatible
-from clustering.ik_means.ik_means import IKMeans
-from clustering.pattern_initialization.ap_init_pb_matlab import APInitPBMatlabCompatible
 from tests.tools import rp, matlab_connector
 
 DataKStarPBRes = namedtuple('DataCSKStarPBRes', 'data k_star p beta res')
