@@ -17,31 +17,28 @@ class KDE:
 
 
 class Direction:
-    def __init__(self, data, vector, do_norm=False):
-        # normalize cluster points
-        if do_norm:
-            mean = np.mean(data, axis=0)
-            range_ = np.max(data, axis=0) - np.min(data, axis=0)
-            self._norm_points = (data - mean) / range_
+    def __init__(self, data, vector):
         # convert to unit vector
         vector = vector / np.linalg.norm(vector)
         assert np.abs(np.linalg.norm(vector) - 1) < 0.0001
         # project cluster points to the unit vector
-        vector_projections = self._cluster_points @ vector
+        vector_projections = data @ vector
         # reorder _points_indices so that projections to the vector are ordered
         projections_sort_indices = np.argsort(vector_projections)
+        self.reordering = projections_sort_indices
         vector_projections = vector_projections[projections_sort_indices]
-        self._points_indices = self._points_indices[projections_sort_indices]
-        self._cluster_points = self._cluster_points[projections_sort_indices]
         kde = KDE(vector_projections)
         kde_funct = np.vectorize(kde)
         kde_values = kde_funct(vector_projections)
-        minima = Direction._find_minima(kde_values)
+        self.minima = Direction._find_minima(kde_values)
+
         try:
-            dmi, dmv = min(minima, key=lambda x: x[1])
-            # here we check the only shift +1, because we assign deepest
+            dmi, dmv = min(self.minima, key=lambda x: x[1])
+            # here we should check the only shift + , because we assign deepest
             # minimum point to the right cluster anyway
-            small_shift = (vector_projections[dmi + 1] - vector_projections[dmi]) / 100  # why exactly 100?
+            small_shift_r = (vector_projections[dmi + 1] - vector_projections[dmi]) / 100  # why exactly 100?
+            small_shift_l = (vector_projections[dmi] - vector_projections[dmi-1]) / 100  # why exactly 100?
+            small_shift = min(small_shift_r, small_shift_l)
             if kde(vector_projections[dmi] + small_shift) < kde(vector_projections[dmi]):
                 dmi += 1
                 dmv = kde(vector_projections[dmi] + small_shift)

@@ -32,6 +32,10 @@ class ClusterStructure:
             return len(self._indices_tuple)  # I hope it is faster then self._points_indices
 
         @property
+        def cluster_points(self):
+            return self._cluster_points
+
+        @property
         def centroid(self):
             """Centroid of this cluster"""
             return self._centroid
