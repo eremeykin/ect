@@ -12,6 +12,8 @@ Install devenv on Ubuntu
 5) install pyqt5
 pyqt5 (.net ->windows sdk->build sip->pyqt5
 http://stackoverflow.com/questions/16846501/how-to-install-pyqt5-on-windows)
+6) pip3 install pytest-mock
+
 
 Install devenv on Windows
 1) install python 3.6 https://www.python.org/downloads/
@@ -31,8 +33,16 @@ Install devenv on Windows
 11)Add libs:
     C:\Users\Dev\AppData\Local\Programs\Python\Python36\Lib\site-packages\PyQt5\Qt\bin
 
-Testing
+Testing (old actually)
 1) sudo pip3 install - U pytest
 2) sudo pip3 install pytest-qt
 3) sudo apt install tox
 
+
+make resources
+pyrcc5 -o resources.py resources.qrc
+
+import resources
+To use the resource in your code you have to use the ":/" prefix:
+
+pixmap = QPixamp(":/newPrefix/download.jpeg")
