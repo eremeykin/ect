@@ -35,6 +35,12 @@ def repr_param(param):
         DataPBRes(rp("shared/data/data500ws.pts"), 3, 2, 'matlab'),
         DataPBRes(rp("shared/data/data500ws.pts"), 3, 3, 'matlab'),
         DataPBRes(rp("shared/data/data500ws.pts"), 3.5, 2.5, 'matlab'),
+        DataPBRes(rp("shared/data/data500ws.pts"), 3.5, 2, 'matlab'),
+        DataPBRes(rp("shared/data/iris.pts"), 2, 2, 'matlab'),
+        DataPBRes(rp("shared/data/iris.pts"), 3, 2, 'matlab'),
+        DataPBRes(rp("shared/data/iris.pts"), 3.5, 1, 'matlab'),
+        DataPBRes(rp("shared/data/iris.pts"), 2, 1, 'matlab'),
+
     ],
     ids=repr_param)
 def data_pb_res(request):

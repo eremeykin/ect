@@ -1,6 +1,5 @@
 import numpy as np
 from clustering.agglomerative.utils.a_ward_cluster_structure import AWardClusterStructure
-
 from clustering.agglomerative.utils.nearest_neighbor import NearestNeighborChain
 
 
@@ -33,7 +32,10 @@ class AWard:
     #     return (1 - self._alpha) * cluster.w < cluster1.w + cluster2.w
 
     def _stop(self, cluster1, cluster2, merged_cluster, clusters):
-        return len(clusters) <= self._k_star
+        if self._alpha is None:
+            return len(clusters) <= self._k_star
+        else:
+            return merged_cluster.w - cluster1.w - cluster2.w >= self._alpha * merged_cluster.w
 
     def __call__(self):
         """Run A-Ward clustering, using the preset constructed with object.
@@ -44,12 +46,11 @@ class AWard:
         run_nnc = NearestNeighborChain(self._cluster_structure)
         merge_array = run_nnc()
         for cluster1, cluster2, merged_cluster, dist in merge_array:
-            if not self._stop(cluster1, cluster2, merged_cluster, clusters):
-                clusters.discard(cluster1)
-                clusters.discard(cluster2)
-                clusters.add(merged_cluster)
-            else:
+            if self._stop(cluster1, cluster2, merged_cluster, clusters):
                 break
+            clusters.discard(cluster1)
+            clusters.discard(cluster2)
+            clusters.add(merged_cluster)
         self._cluster_structure.clear()
         self._cluster_structure.add_all_clusters(clusters)
         return self._cluster_structure.current_labels()

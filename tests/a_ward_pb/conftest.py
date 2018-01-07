@@ -29,6 +29,7 @@ def repr_param(param):
     DataKStarPBRes(rp("shared/data/data500ws.pts"), 8, 2, 2, 'matlab'),
     DataKStarPBRes(rp("shared/data/iris.pts"), 3, 2, 2, 'matlab'),
     DataKStarPBRes(rp("shared/data/iris.pts"), 3, 3, 2, 'matlab'),
+    DataKStarPBRes(rp("shared/data/iris.pts"), 3, 3, 1, 'matlab'),
 ],
     ids=repr_param)
 def data_cs_k_star_res(request):

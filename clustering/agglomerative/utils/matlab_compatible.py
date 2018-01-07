@@ -16,14 +16,18 @@ class AWardPBClusterStructureMatlabCompatible(AWardPBClusterStructure):
                 self._centroid = minkowski_center(cluster_points, p)
                 # weights update (as per 7)
                 D = np.sum(np.abs(cluster_points - self.centroid) ** p, axis=0).astype(np.float64)
-                with np.errstate(divide='ignore', invalid='ignore'):
-                    D += 0.01
-                    denominator = ((D ** (1 / (beta - 1))) * np.sum((np.float64(1.0) / D) ** (1 / (beta - 1))))
-                isnan = np.isnan(denominator)
-                if np.any(isnan):
-                    self._weights = isnan.astype(int) / np.sum(isnan)
+                if beta != 1:
+                    with np.errstate(divide='ignore', invalid='ignore'):
+                        D += 0.01
+                        denominator = ((D ** (1 / (beta - 1))) * np.sum((np.float64(1.0) / D) ** (1 / (beta - 1))))
+                    isnan = np.isnan(denominator)
+                    if np.any(isnan):
+                        self._weights = isnan.astype(int) / np.sum(isnan)
+                    else:
+                        self._weights = np.float64(1.0) / denominator
                 else:
-                    self._weights = np.float64(1.0) / denominator
+                    self._weights = np.zeros(shape=(cluster_structure.dim_cols,))
+                    self._weights[np.argmin(D)] = 1
                 self._is_stable = False
                 assert self._weights.shape == (cluster_structure.dim_cols,)
                 assert np.abs(np.sum(self._weights) - 1) < 0.0001
@@ -43,14 +47,19 @@ class IMWKMeansClusterStructureMatlabCompatible(AWardPBClusterStructure):
 
     def calculate_weights(self, D, mean_D):
         p, beta = self._p, self._beta
-        with np.errstate(divide='ignore', invalid='ignore'):
-            D += mean_D
-            denominator = ((D ** (1 / (beta - 1))) * np.sum((np.float64(1.0) / D) ** (1 / (beta - 1))))
-        isnan = np.isnan(denominator)
-        if np.any(isnan):
-            weights = isnan.astype(int) / np.sum(isnan)
+        D += mean_D
+        if beta != 1:
+            with np.errstate(divide='ignore', invalid='ignore'):
+                # D += mean_D
+                denominator = ((D ** (1 / (beta - 1))) * np.sum((np.float64(1.0) / D) ** (1 / (beta - 1))))
+            isnan = np.isnan(denominator)
+            if np.any(isnan):
+                weights = isnan.astype(int) / np.sum(isnan)
+            else:
+                weights = np.float64(1.0) / denominator
         else:
-            weights = np.float64(1.0) / denominator
+            weights = np.zeros(shape=(self.dim_cols,))
+            weights[np.argmin(D)] = 1
         assert weights.shape == (self.dim_cols,)
         assert np.abs(np.sum(weights) - 1) < 0.0001
         return weights

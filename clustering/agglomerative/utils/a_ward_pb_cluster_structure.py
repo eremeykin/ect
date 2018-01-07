@@ -99,7 +99,7 @@ class AWardPBClusterStructure(AgglomerativeClusterStructure):
             weights = self._equal_weights
         else:
             weights = cluster_of_point1.weights
-        return np.sum((weights ** self.beta) * np.abs(point1 - point2) ** self.p)
+        return np.sum((weights ** self.beta) * (np.abs(point1 - point2) ** self.p)) ** (1/self.p)
 
     def dist_point_to_cluster(self, point, cluster):
         """Calculates distance from specified point to cluster centroid.
@@ -149,15 +149,18 @@ class AWardPBClusterStructure(AgglomerativeClusterStructure):
         new_centroid = minkowski_center(new_points, self.p)
 
         D = np.sum(np.abs(new_points - new_centroid) ** p, axis=0).astype(np.float64)
-        with np.errstate(divide='ignore', invalid='ignore'):
-            D += 0.0001
-            denominator = ((D ** (1 / (beta - 1))) * np.sum((np.float64(1.0) / D) ** (1 / (beta - 1))))
-        isnan = np.isnan(denominator)
-        if np.any(isnan):
-            new_weights = isnan.astype(int) / np.sum(isnan)
+        if beta != 1:
+            with np.errstate(divide='ignore', invalid='ignore'):
+                D += 0.0001
+                denominator = ((D ** (1 / (beta - 1))) * np.sum((np.float64(1.0) / D) ** (1 / (beta - 1))))
+            isnan = np.isnan(denominator)
+            if np.any(isnan):
+                new_weights = isnan.astype(int) / np.sum(isnan)
+            else:
+                new_weights = np.float64(1.0) / denominator
         else:
-            new_weights = np.float64(1.0) / denominator
-
+            new_weights = np.zeros(shape=new_centroid.shape)
+            new_weights[np.argmin(D)] = 1
         new_cluster = AWardPBClusterStructure.Cluster.from_params(self, new_points_indices,
                                                                   weights=new_weights,
                                                                   centroid=new_centroid)
