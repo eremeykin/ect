@@ -14,9 +14,20 @@ def rp(path):
 def array_equals_up_to_order(array1, array2, atol=1.e-5):
     if array1.shape != array2.shape:
         return False
-    array1 = array1[array1[:, 0].argsort()]
-    array2 = array2[array2[:, 0].argsort()]
-    return np.allclose(array1, array2, atol=atol)
+    # array1 = array1[array1[:, 0].argsort()]
+    # array2 = array2[array2[:, 0].argsort()]
+    deleted = set()
+    for row1 in array1:
+        def inner():
+            for index, row2 in enumerate(array2):
+                if index not in deleted:
+                    if np.allclose(row1, row2, atol=atol):
+                        deleted.add(index)
+                        return True
+        if not inner():
+            return False
+    return deleted == set(range(len(array1)))
+    # return np.allclose(array1, array2, atol=atol)
 
 
 def transformation_exists(X, Y):
