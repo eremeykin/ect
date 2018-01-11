@@ -67,7 +67,6 @@ class APInit:
                     break
                 anomalous_cluster = new_anomalous_cluster
             self._cluster_structure.add_cluster(anomalous_cluster)
-            print(anomalous_cluster.power)
             current_data = current_data[~anomaly]
             current_index = current_index[~anomaly]
         self._completed = True
