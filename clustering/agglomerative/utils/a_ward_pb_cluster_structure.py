@@ -159,8 +159,12 @@ class AWardPBClusterStructure(AgglomerativeClusterStructure):
             else:
                 new_weights = np.float64(1.0) / denominator
         else:
-            new_weights = np.zeros(shape=new_centroid.shape)
-            new_weights[np.argmin(D)] = 1
+            sh = new_centroid.shape
+            if np.allclose(D - D[0], np.zeros(sh)):
+                new_weights = np.ones(sh) / sh[0]
+            else:
+                new_weights = np.zeros(shape=sh)
+                new_weights[np.argmin(D)] = 1
         new_cluster = AWardPBClusterStructure.Cluster.from_params(self, new_points_indices,
                                                                   weights=new_weights,
                                                                   centroid=new_centroid)

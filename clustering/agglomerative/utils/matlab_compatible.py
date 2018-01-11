@@ -26,8 +26,12 @@ class AWardPBClusterStructureMatlabCompatible(AWardPBClusterStructure):
                     else:
                         self._weights = np.float64(1.0) / denominator
                 else:
-                    self._weights = np.zeros(shape=(cluster_structure.dim_cols,))
-                    self._weights[np.argmin(D)] = 1
+                    sh = (cluster_structure.dim_cols,)
+                    if np.allclose(D-D[0], np.zeros(sh)):
+                        self._weights = np.ones(sh)/sh[0]
+                    else:
+                        self._weights = np.zeros(shape=sh)
+                        self._weights[np.argmin(D)] = 1
                 self._is_stable = False
                 assert self._weights.shape == (cluster_structure.dim_cols,)
                 assert np.abs(np.sum(self._weights) - 1) < 0.0001
@@ -39,11 +43,11 @@ class AWardPBClusterStructureMatlabCompatible(AWardPBClusterStructure):
 class IMWKMeansClusterStructureMatlabCompatible(AWardPBClusterStructure):
     def dist_point_to_point(self, point1, point2, cluster_of_point1=None):
         if cluster_of_point1 is None:
-            return np.sum((self._equal_weights ** self.beta) * np.abs(point1 - point2) ** self.p)
+            return np.sum((self._equal_weights ** self.beta) * np.abs(point1 - point2) ** self.p) ** (1 / p)  # TODO ATTENTION
         else:
             p = self.p
             beta = self.beta
-            return np.sum((cluster_of_point1.weights ** beta) * np.abs(point1 - point2) ** p) ** (1 / p)
+            return np.sum((cluster_of_point1.weights ** beta) * (np.abs(point1 - point2) ** p)) ** (1 / p)
 
     def calculate_weights(self, D, mean_D):
         p, beta = self._p, self._beta
@@ -58,7 +62,11 @@ class IMWKMeansClusterStructureMatlabCompatible(AWardPBClusterStructure):
             else:
                 weights = np.float64(1.0) / denominator
         else:
-            weights = np.zeros(shape=(self.dim_cols,))
+            sh = (self.dim_cols,)
+            # if np.allclose(D - D[0], np.zeros(sh)):
+            #     weights = np.ones(sh) / sh[0]
+            # else:
+            weights = np.zeros(shape=sh)
             weights[np.argmin(D)] = 1
         assert weights.shape == (self.dim_cols,)
         assert np.abs(np.sum(weights) - 1) < 0.0001
