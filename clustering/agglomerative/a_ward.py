@@ -21,6 +21,7 @@ class AWard:
         self._alpha = alpha
         self._cluster_structure = cluster_structure
         self._initial_cluster_count = cluster_structure.clusters_number
+        self._completed = False
 
     @classmethod
     def from_labels(cls, data, labels, k_star):
@@ -30,6 +31,12 @@ class AWard:
 
     # def check_criterion(self, cluster1, cluster2, cluster):
     #     return (1 - self._alpha) * cluster.w < cluster1.w + cluster2.w
+
+    @property
+    def cluster_structure(self):
+        if not self._completed:
+            raise BaseException("Not completed yet")
+        return self._cluster_structure
 
     def _stop(self, cluster1, cluster2, merged_cluster, clusters):
         if self._alpha is None:
@@ -53,4 +60,5 @@ class AWard:
             clusters.add(merged_cluster)
         self._cluster_structure.clear()
         self._cluster_structure.add_all_clusters(clusters)
+        self._completed = True
         return self._cluster_structure.current_labels()
