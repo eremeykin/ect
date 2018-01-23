@@ -63,17 +63,17 @@ class ClusterStructure:
             pass
 
     def __init__(self, data):
-        self._clusters = set()
+        self._clusters = list()
         self._data = data
         self._data.flags.writeable = False
         self._dim_rows = self._data.shape[0]
         self._dim_cols = self._data.shape[1]
 
     def release_new_batch(self, indices_batch):
-        new_clusters = set()
+        new_clusters = list()
         for indices in indices_batch:
             new_cluster = self.release_new_cluster(indices)
-            new_clusters.add(new_cluster)
+            new_clusters.append(new_cluster)
         return new_clusters
 
     def release_new_cluster(self, points_indices):
@@ -100,19 +100,19 @@ class ClusterStructure:
 
     @property
     def clusters(self):
-        return frozenset(self._clusters)
+        return self._clusters
 
     def add_cluster(self, cluster):
-        self._clusters.add(cluster)
+        self._clusters.append(cluster)
 
     def add_all_clusters(self, set_of_clusters):
-        self._clusters.update(set_of_clusters)
+        self._clusters.extend(set_of_clusters)
 
     def del_cluster(self, cluster):
-        self._clusters.remove(cluster)
+        self._clusters = [x for x in self._clusters if x != cluster]
 
     def clear(self):
-        self._clusters = set()
+        self._clusters = list()
 
     def current_labels(self):
         """Calculates and returns cluster structure represented by labels of

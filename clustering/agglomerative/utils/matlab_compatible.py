@@ -87,7 +87,7 @@ class IMWKMeansClusterStructureMatlabCompatible(AWardPBClusterStructure):
 
     def release_new_batch(self, indices_batch):
         p, beta = self._p, self._beta
-        new_clusters = set()
+        new_clusters = list()
         centroids = []
         D = []
         for indices in indices_batch:
@@ -102,5 +102,5 @@ class IMWKMeansClusterStructureMatlabCompatible(AWardPBClusterStructure):
             weights = self.calculate_weights(D[i], D_mean)
             new_cluster = IMWKMeansClusterStructureMatlabCompatible. \
                 Cluster.from_params(self, points_indices, centroid=centroids[i], weights=weights)
-            new_clusters.add(new_cluster)
+            new_clusters.append(new_cluster)
         return new_clusters
