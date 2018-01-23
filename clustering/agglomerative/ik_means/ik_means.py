@@ -34,8 +34,11 @@ class IKMeans:
 
             new_clusters = self._cluster_structure.release_new_batch(
                 [np.array(x) for x in cluster_points.values()])  # TODO think how can I write it better
-            if new_clusters == clusters:
+            # stop condition
+            if set(new_clusters) == set(clusters):
                 break
+            # if all(np.allclose(old_c.centroid, new_c.centroid)for old_c, new_c in zip(clusters, new_clusters)):
+            #     break
             self._cluster_structure.clear()
             self._cluster_structure.add_all_clusters(set(new_clusters))
         self._completed = True
