@@ -13,6 +13,7 @@ Install devenv on Ubuntu
 pyqt5 (.net ->windows sdk->build sip->pyqt5
 http://stackoverflow.com/questions/16846501/how-to-install-pyqt5-on-windows)
 6) pip3 install pytest-mock
+7) pip3 install tabulate
 
 
 Install devenv on Windows
