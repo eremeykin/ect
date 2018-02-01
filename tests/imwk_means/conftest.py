@@ -25,7 +25,6 @@ def repr_param(param):
     beta = param.beta
     return "{:10s}, p={:5.2f}, beta={:5.2f} {}".format(res, p, beta, sp)
 
-
 @pytest.fixture(
     params=[
         DataPBRes(rp("shared/data/symmetric_15points.pts"), 2, 0, 'sklearn'),
@@ -40,9 +39,13 @@ def repr_param(param):
         DataPBRes(rp("shared/data/data500ws.pts"), 3, 2, 'matlab'),
         DataPBRes(rp("shared/data/data500ws.pts"), 3, 3, 'matlab'),
         DataPBRes(rp("shared/data/iris.pts"), 3.5, 1, 'matlab'),
-        DataPBRes(rp("shared/data/data500ws.pts"), 3, 1, 'matlab'),  # looks like computational error
+        DataPBRes(rp("shared/data/data500ws.pts"), 3, 1, 'matlab'),  # fails, TODO looks like computational error
         DataPBRes(rp("shared/data/data500ws.pts"), 2, 1, 'matlab'),  # here was a problem with singleton cluster.
         # in watlab weights are 1 0 0 ... but I had 0.1666 0.1666 0.1666 ...
+        DataPBRes(rp("shared/data/data500ws.pts"), 2.6, 1.1, 'matlab'),  # fails, TODO check whats wrong
+        DataPBRes(rp("shared/data/random_1000x12_c12.pts"), 2.6, 1.1, 'matlab'),
+        DataPBRes(rp("shared/data/data500ws.pts"), 2.0, 1.1, 'matlab'),
+        DataPBRes(rp("shared/data/random_1000x12_c12.pts"), 2.0, 1.1, 'matlab'),
     ],
     ids=repr_param)
 def data_cs_pb_res(request):

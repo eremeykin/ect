@@ -41,6 +41,8 @@ def repr_param(param):
         DataPBRes(rp("shared/data/iris.pts"), 3, 2, 'matlab'),
         DataPBRes(rp("shared/data/iris.pts"), 3.5, 1, 'matlab'),
         DataPBRes(rp("shared/data/iris.pts"), 2, 1, 'matlab'),
+        DataPBRes(rp("shared/data/data500ws.pts"), 2.6, 1.1, 'matlab'),
+        DataPBRes(rp("shared/data/random_1000x12_c12.pts"), 2.6, 1.1, 'matlab'),
 
     ],
     ids=repr_param)
