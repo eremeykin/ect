@@ -28,7 +28,7 @@ class APInit:
     @property
     def cluster_structure(self):
         if not self._completed:
-            raise APInit.AccessToUnavailableResult("Can't return clusters because the algoritm must be "
+            raise APInit.AccessToUnavailableResult("Can't return clusters because the algorithm must be "
                                                    "executed first. Please, use __call__ to run algorithm.")
         return self._cluster_structure
 
