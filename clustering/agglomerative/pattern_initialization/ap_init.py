@@ -6,8 +6,9 @@ from clustering.agglomerative.utils.a_ward_cluster_structure import AWardCluster
 class APInit:
     _MAX_LOOPS = 500
 
-    def __init__(self, data):
+    def __init__(self, data, threshold=1):
         self._data = data
+        self.threshold = threshold
         self._index = np.arange(len(data), dtype=int)[None].T
         self._origin = self._calculate_origin()
         self._completed = False
@@ -44,7 +45,6 @@ class APInit:
             tentative_centroid_index = current_index[tentative_centroid_relative_index]
 
             anomalous_cluster = self._cluster(tentative_centroid_index)
-            # self._cluster_structure.add_cluster(anomalous_cluster)
 
             anomaly = np.full(shape=current_index.shape, fill_value=False, dtype=bool)
             anomaly[tentative_centroid_relative_index] = True
@@ -66,7 +66,8 @@ class APInit:
                 if new_anomalous_cluster == anomalous_cluster:
                     break
                 anomalous_cluster = new_anomalous_cluster
-            self._cluster_structure.add_cluster(anomalous_cluster)
+            if anomalous_cluster.power >= self.threshold:
+                self._cluster_structure.add_cluster(anomalous_cluster)
             current_data = current_data[~anomaly]
             current_index = current_index[~anomaly]
         self._completed = True

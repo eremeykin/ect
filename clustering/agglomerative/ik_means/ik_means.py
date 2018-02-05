@@ -1,6 +1,5 @@
 import numpy as np
-
-from clustering.agglomerative.utils.a_ward_pb_cluster_structure import AWardPBClusterStructure
+from clustering.agglomerative.utils.imwk_means_cluster_structure import IMWKMeansClusterStructure
 
 
 class IKMeans:
@@ -10,12 +9,6 @@ class IKMeans:
         self._cluster_structure = cluster_structure
         self._data = cluster_structure.data
         self._completed = False
-
-    #
-    # @classmethod
-    # def from_labels(cls, cluster_structure_class, data, labels, centroids, weights):
-    #     cs = cluster_structure_class.from_labels(data, labels, centroids, weights)
-    #     return cls(cs)
 
     @property
     def cluster_structure(self):

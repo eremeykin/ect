@@ -5,8 +5,8 @@ import numpy as np
 import pytest
 from clustering.agglomerative.ik_means.ik_means import IKMeans
 
-from clustering.agglomerative.pattern_initialization.ap_init_pb_matlab import APInitPBMatlabCompatible
-from clustering.agglomerative.utils.matlab_compatible import IMWKMeansClusterStructureMatlabCompatible
+from clustering.agglomerative.pattern_initialization.ap_init_pb import APInitPB
+from clustering.agglomerative.utils.imwk_means_cluster_structure import IMWKMeansClusterStructure
 from tests.tools import rp, matlab_connector
 
 DataKStarPBRes = namedtuple('DataCSKStarPBRes', 'data k_star p beta res')
@@ -45,11 +45,11 @@ def data_cs_k_star_res(request):
     res = dict()
     if param.res == 'matlab':
         data = np.loadtxt(param.data)
-        run_ap_init_pb = APInitPBMatlabCompatible(data, param.p, param.beta)
+        run_ap_init_pb = APInitPB(data, param.p, param.beta)
         run_ap_init_pb()
-        # change cluster structure to matlab compatible
+        # change cluster structure to imwk
         clusters = run_ap_init_pb.cluster_structure.clusters
-        new_cluster_structure = IMWKMeansClusterStructureMatlabCompatible(data, param.p, param.beta)
+        new_cluster_structure = IMWKMeansClusterStructure(data, param.p, param.beta)
         new_cluster_structure.add_all_clusters(clusters)
         run_ik_means = IKMeans(new_cluster_structure)
         run_ik_means()

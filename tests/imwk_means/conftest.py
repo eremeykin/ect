@@ -3,11 +3,11 @@ from collections import namedtuple
 
 import numpy as np
 import pytest
-from clustering.agglomerative.pattern_initialization.ap_init_pb_matlab import APInitPBMatlabCompatible
+from clustering.agglomerative.pattern_initialization.ap_init_pb import APInitPB
 from sklearn.cluster import KMeans as sklearnKMeans
 
 from clustering.agglomerative.pattern_initialization.ap_init_pb import APInitPB
-from clustering.agglomerative.utils.matlab_compatible import IMWKMeansClusterStructureMatlabCompatible
+from clustering.agglomerative.utils.imwk_means_cluster_structure import IMWKMeansClusterStructure
 from tests.tools import matlab_connector, rp
 
 DataCSPBRes = namedtuple('DataCSPBRes', 'data cs p beta res')
@@ -66,10 +66,10 @@ def data_cs_pb_res(request):
         data = np.loadtxt(param.data)
 
         # run my implementation of ap_init_pb to setup imwk_means
-        run_ap_init_pb = APInitPBMatlabCompatible(data, p=param.p, beta=param.beta)
+        run_ap_init_pb = APInitPB(data, p=param.p, beta=param.beta)
         init_labels = run_ap_init_pb()
         clusters = run_ap_init_pb.cluster_structure.clusters
-        new_cluster_structure = IMWKMeansClusterStructureMatlabCompatible(data, param.p, param.beta)
+        new_cluster_structure = IMWKMeansClusterStructure(data, param.p, param.beta)
         new_cluster_structure.add_all_clusters(clusters)
 
         # run matlab implementation

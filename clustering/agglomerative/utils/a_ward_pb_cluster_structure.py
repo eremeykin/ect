@@ -18,22 +18,31 @@ class AWardPBClusterStructure(AgglomerativeClusterStructure):
             :param AWardPBClusterStructure cluster_structure: a cluster structure which generates the cluster
             :param numpy.array points_indices: [points_in_cluster x 1] the indices of points that forms the cluster.
             Indices are specified based on initial data set."""
-            super().__init__(cluster_structure, points_indices, with_setup)
+            super().__init__(cluster_structure, points_indices, False)
             if with_setup:
                 p, beta = cluster_structure.p, cluster_structure.beta
+                cluster_points = cluster_structure.data[self._points_indices]
                 # update centroid to the component-wise Minkowski centre of all points
-                self._centroid = minkowski_center(self._cluster_points, p)
+                self._centroid = minkowski_center(cluster_points, p)
                 # weights update (as per 7)
-                D = np.sum(np.abs(self._cluster_points - self.centroid) ** p, axis=0).astype(np.float64)
-                with np.errstate(divide='ignore', invalid='ignore'):
-                    denominator = ((D ** (1 / (p - 1))) * np.sum((np.float64(1.0) / D) ** (1 / (p - 1))))
-                isnan = np.isnan(denominator)
-                if np.any(isnan):
-                    self._weights = isnan.astype(int) / np.sum(isnan)
+                D = np.sum(np.abs(cluster_points - self.centroid) ** p, axis=0).astype(np.float64)
+                if beta != 1:
+                    with np.errstate(divide='ignore', invalid='ignore'):
+                        D += 0.01
+                        denominator = ((D ** (1 / (beta - 1))) * np.sum((np.float64(1.0) / D) ** (1 / (beta - 1))))
+                    isnan = np.isnan(denominator)
+                    if np.any(isnan):
+                        self._weights = isnan.astype(int) / np.sum(isnan)
+                    else:
+                        self._weights = np.float64(1.0) / denominator
                 else:
-                    self._weights = np.float64(1.0) / denominator
-                assert self._weights is not None
-                assert self._centroid is not None
+                    sh = (cluster_structure.dim_cols,)
+                    if np.allclose(D - D[0], np.zeros(sh)):
+                        self._weights = np.ones(sh) / sh[0]
+                    else:
+                        self._weights = np.zeros(shape=sh)
+                        self._weights[np.argmin(D)] = 1
+                self._is_stable = False
                 assert self._weights.shape == (cluster_structure.dim_cols,)
                 assert np.abs(np.sum(self._weights) - 1) < 0.0001
 
@@ -133,9 +142,6 @@ class AWardPBClusterStructure(AgglomerativeClusterStructure):
     def beta(self):
         return self._beta
 
-    def release_new_cluster(self, points_indices):
-        return AWardPBClusterStructure.Cluster(self, points_indices)
-
     def merge(self, cluster1, cluster2):
         """Merges two clusters into one."""
         p, beta = self._p, self._beta
@@ -165,7 +171,7 @@ class AWardPBClusterStructure(AgglomerativeClusterStructure):
             else:
                 new_weights = np.zeros(shape=sh)
                 new_weights[np.argmin(D)] = 1
-        new_cluster = AWardPBClusterStructure.Cluster.from_params(self, new_points_indices,
+        new_cluster = self.Cluster.from_params(self, new_points_indices,
                                                                   weights=new_weights,
                                                                   centroid=new_centroid)
         self.add_cluster(new_cluster)

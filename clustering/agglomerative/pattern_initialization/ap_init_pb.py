@@ -9,10 +9,11 @@ class APInitPB(APInit):
     and a fast k -means initialisation)', see page 351,
     algorithm Anomalous pattern initialisation for A-Ward p beta and imwk -means p beta"""
 
-    def __init__(self, data, p, beta):
+    def __init__(self, data, p, beta, threshold=1):
         self._p = p
         self._beta = beta
-        super().__init__(data)
+        self._threshold = threshold
+        super().__init__(data, self._threshold)
 
     def _create_cluster_structure(self):
         return AWardPBClusterStructure(self._data, self._p, self._beta)

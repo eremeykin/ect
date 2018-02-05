@@ -77,7 +77,7 @@ class ClusterStructure:
         return new_clusters
 
     def release_new_cluster(self, points_indices):
-        return ClusterStructure.Cluster(self, points_indices)
+        return self.Cluster(self, points_indices)
 
     @property
     def dim_cols(self):
