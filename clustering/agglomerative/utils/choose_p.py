@@ -1,5 +1,5 @@
-from clustering.agglomerative.pattern_initialization.ap_init_pb_matlab import APInitPBMatlabCompatible
-from clustering.agglomerative.utils.matlab_compatible import IMWKMeansClusterStructureMatlabCompatible
+from clustering.agglomerative.pattern_initialization.ap_init_pb import APInitPB
+from clustering.agglomerative.utils.imwk_means_cluster_structure import IMWKMeansClusterStructure
 from clustering.agglomerative.ik_means.ik_means import IKMeans
 from clustering.agglomerative.a_ward_pb import AWardPB
 import numpy as np
@@ -70,11 +70,11 @@ class ChooseP:
         self._criterion = ChooseP.AvgSilhouetteWidthCriterion()
 
     def _single_run(self, p, beta):
-        run_ap_init_pb = APInitPBMatlabCompatible(self._data, p, beta)
+        run_ap_init_pb = APInitPB(self._data, p, beta)
         run_ap_init_pb()
         # change cluster structure to matlab compatible
         clusters = run_ap_init_pb.cluster_structure.clusters
-        new_cluster_structure = IMWKMeansClusterStructureMatlabCompatible(self._data, p, beta)
+        new_cluster_structure = IMWKMeansClusterStructure(self._data, p, beta)
         new_cluster_structure.add_all_clusters(clusters)
         run_ik_means = IKMeans(new_cluster_structure)
         run_ik_means()

@@ -30,8 +30,6 @@ class IKMeans:
             # stop condition
             if set(new_clusters) == set(clusters):
                 break
-            # if all(np.allclose(old_c.centroid, new_c.centroid)for old_c, new_c in zip(clusters, new_clusters)):
-            #     break
             self._cluster_structure.clear()
             self._cluster_structure.add_all_clusters(set(new_clusters))
         self._completed = True
