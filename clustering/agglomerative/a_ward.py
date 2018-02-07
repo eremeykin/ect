@@ -23,15 +23,6 @@ class AWard:
         self._initial_cluster_count = cluster_structure.clusters_number
         self._completed = False
 
-    @classmethod
-    def from_labels(cls, data, labels, k_star):
-        """Constructs the AWard algorithm preset from given labels and k_star"""
-        cluster_structure = AWardClusterStructure.from_labels(data, labels)
-        return cls(cluster_structure, k_star)
-
-    # def check_criterion(self, cluster1, cluster2, cluster):
-    #     return (1 - self._alpha) * cluster.w < cluster1.w + cluster2.w
-
     @property
     def cluster_structure(self):
         if not self._completed:

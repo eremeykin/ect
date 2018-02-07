@@ -5,14 +5,6 @@ from clustering.common import minkowski_center
 
 class IMWKMeansClusterStructure(AWardPBClusterStructure):
 
-    def dist_point_to_point(self, point1, point2, cluster_of_point1=None):
-        p = self.p
-        beta = self.beta
-        if cluster_of_point1 is None:
-            return np.sum((self._equal_weights ** beta) * np.abs(point1 - point2) ** p) ** (1 / p)
-        else:
-            return np.sum((cluster_of_point1.weights ** beta) * (np.abs(point1 - point2) ** p)) ** (1 / p)
-
     def calculate_weights(self, D, mean_D):
         p, beta = self._p, self._beta
         D += mean_D
@@ -57,6 +49,6 @@ class IMWKMeansClusterStructure(AWardPBClusterStructure):
         for i in range(len(indices_batch)):
             points_indices = indices_batch[i]
             weights = self.calculate_weights(D[i], D_mean)
-            new_cluster = self.Cluster.from_params(self, points_indices, centroid=centroids[i], weights=weights)
+            new_cluster = self.Cluster(self, points_indices, centroid=centroids[i], weights=weights)
             new_clusters.append(new_cluster)
         return new_clusters

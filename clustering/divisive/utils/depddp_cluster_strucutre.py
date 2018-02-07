@@ -5,8 +5,8 @@ from clustering.divisive.utils.direction import Direction
 
 class DEPDDPClusterStructure(ClusterStructure):
     class Cluster(ClusterStructure.Cluster):
-        def __init__(self, cluster_structure, points_indices, with_setup=True):
-            super().__init__(cluster_structure, points_indices, with_setup)
+        def __init__(self, cluster_structure, points_indices):
+            super().__init__(cluster_structure, points_indices)
             # find first principal component
             # 1. normalize cluster points
             mean = np.mean(self._cluster_points, axis=0)

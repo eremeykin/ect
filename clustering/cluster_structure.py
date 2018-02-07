@@ -8,7 +8,7 @@ class ClusterStructure:
         :param int label: integer unique label of this cluster
         :param numpy.array data: of data on which the cluster is defined"""
 
-        def __init__(self, cluster_structure, points_indices, with_setup=True):
+        def __init__(self, cluster_structure, points_indices):
             self._points_indices = points_indices
             self._points_indices.flags.writeable = False
             self._indices_tuple = tuple(points_indices)

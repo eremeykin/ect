@@ -7,8 +7,8 @@ from clustering.agglomerative.pattern_initialization.ap_init import APInit
 
 class BiKMeansRClusterStructure(ClusterStructure):
     class Cluster(ClusterStructure.Cluster):
-        def __init__(self, cluster_structure, points_indices, with_setup=True):
-            super().__init__(cluster_structure, points_indices, with_setup)
+        def __init__(self, cluster_structure, points_indices):
+            super().__init__(cluster_structure, points_indices)
 
         def gen_directions(self, directions_num, mean, cov):
             directions = []

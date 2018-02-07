@@ -37,7 +37,7 @@ def repr_param(param):
     DataKStarPBRes(rp("shared/data/data500ws.pts"), 8, 3.5, 2, 'matlab'),
     DataKStarPBRes(rp("shared/data/data100.pts"), 8, 3.5, 2, 'matlab'),
     DataKStarPBRes(rp("shared/data/data100.pts"), 8, 2, 2, 'matlab'),
-    DataKStarPBRes(rp("shared/data/data500ws.pts"), 8, 2.6, 1.1, 'matlab'),
+    DataKStarPBRes(rp("shared/data/data500ws.pts"), 8, 2.6, 1.1, 'matlab'),  # fails, TODO fix, see IMWK Means
 ],
     ids=repr_param)
 def data_cs_k_star_res(request):

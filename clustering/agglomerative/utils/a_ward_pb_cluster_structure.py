@@ -11,20 +11,22 @@ class AWardPBClusterStructure(AgglomerativeClusterStructure):
         """Cluster for A-Ward agglomerative clustering with p and beta parameters
         """
 
-        def __init__(self, cluster_structure, points_indices, with_setup=True):
+        def __init__(self, cluster_structure, points_indices, centroid=None, weights=None):
             """Constructor for cluster. Basically the cluster structure generates the cluster, so
             the constructor should be called only from ClusterStructure's methods.
 
             :param AWardPBClusterStructure cluster_structure: a cluster structure which generates the cluster
             :param numpy.array points_indices: [points_in_cluster x 1] the indices of points that forms the cluster.
             Indices are specified based on initial data set."""
-            super().__init__(cluster_structure, points_indices, False)
-            if with_setup:
-                p, beta = cluster_structure.p, cluster_structure.beta
-                cluster_points = cluster_structure.data[self._points_indices]
-                # update centroid to the component-wise Minkowski centre of all points
-                self._centroid = minkowski_center(cluster_points, p)
-                # weights update (as per 7)
+            super().__init__(cluster_structure, points_indices)
+            p, beta = cluster_structure.p, cluster_structure.beta
+            cluster_points = cluster_structure.data[self._points_indices]
+
+            if centroid is None:
+                centroid = minkowski_center(cluster_points, p)
+            self._centroid = centroid
+            if weights is None:
+                # set weights (as per 7)
                 D = np.sum(np.abs(cluster_points - self.centroid) ** p, axis=0).astype(np.float64)
                 if beta != 1:
                     with np.errstate(divide='ignore', invalid='ignore'):
@@ -32,36 +34,19 @@ class AWardPBClusterStructure(AgglomerativeClusterStructure):
                         denominator = ((D ** (1 / (beta - 1))) * np.sum((np.float64(1.0) / D) ** (1 / (beta - 1))))
                     isnan = np.isnan(denominator)
                     if np.any(isnan):
-                        self._weights = isnan.astype(int) / np.sum(isnan)
+                        weights = isnan.astype(int) / np.sum(isnan)
                     else:
-                        self._weights = np.float64(1.0) / denominator
+                        weights = np.float64(1.0) / denominator
                 else:
                     sh = (cluster_structure.dim_cols,)
                     if np.allclose(D - D[0], np.zeros(sh)):
-                        self._weights = np.ones(sh) / sh[0]
+                        weights = np.ones(sh) / sh[0]
                     else:
-                        self._weights = np.zeros(shape=sh)
-                        self._weights[np.argmin(D)] = 1
-                self._is_stable = False
-                assert self._weights.shape == (cluster_structure.dim_cols,)
-                assert np.abs(np.sum(self._weights) - 1) < 0.0001
-
-        @classmethod
-        def from_params(cls, cluster_structure, points_indices, **kwargs):
-            """The method allows to create cluster with given parameters.
-            The parameters of A-Ward cluster are: w and centroid.
-
-            :param ClusterStructure cluster_structure: cluster structure that generates the cluster
-            :param numpy.array points_indices: [points_in_cluster] the indices of points that forms the cluster
-            :param numpy.array weights: [features] float values of weights for each feature. This weights affects on distances
-            :param numpy.array centroid: [features] centroids coordinates. One float value for each feature
-            :returns new cluster
-            """
-            new_cluster = cls(cluster_structure, points_indices, with_setup=False)
-            new_cluster._points_indices = points_indices
-            new_cluster._weights = kwargs['weights']
-            new_cluster._centroid = kwargs['centroid']
-            return new_cluster
+                        weights = np.zeros(shape=sh)
+                        weights[np.argmin(D)] = 1
+            self._weights = weights
+            assert self._weights.shape == (cluster_structure.dim_cols,)
+            assert np.abs(np.sum(self._weights) - 1) < 0.0001
 
         @property
         def weights(self):
@@ -84,18 +69,6 @@ class AWardPBClusterStructure(AgglomerativeClusterStructure):
         self._beta = beta
         self._equal_weights = np.ones(shape=(self.dim_cols,)) / self.dim_cols
 
-    @classmethod
-    def from_labels(cls, data, labels, centroids, weights):
-        result_cs = cls(data)
-        index = np.arange(0, len(labels))
-        for l, unique_label in enumerate(np.unique(labels)):
-            centroid = centroids[l]
-            weights = weights[l]
-            new_cluster = cls.Cluster.from_params(result_cs, points_indices=index[labels == unique_label],
-                                                  weights=weights, centroid=centroid)
-            result_cs.add_cluster(new_cluster)
-        return result_cs
-
     def dist_point_to_point(self, point1, point2, cluster_of_point1=None):
         """Calculates distance from one point to another.
         The distance is equal to squared euclidean distance between this points.
@@ -108,7 +81,7 @@ class AWardPBClusterStructure(AgglomerativeClusterStructure):
             weights = self._equal_weights
         else:
             weights = cluster_of_point1.weights
-        return np.sum((weights ** self.beta) * (np.abs(point1 - point2) ** self.p)) ** (1/self.p)
+        return np.sum((weights ** self.beta) * (np.abs(point1 - point2) ** self.p)) ** (1 / self.p)
 
     def dist_point_to_cluster(self, point, cluster):
         """Calculates distance from specified point to cluster centroid.
@@ -120,19 +93,19 @@ class AWardPBClusterStructure(AgglomerativeClusterStructure):
         return self.dist_point_to_point(point, cluster.centroid, cluster)
 
     def dist_cluster_to_cluster(self, cluster1, cluster2):
-            """WardPB distance between this cluster and specified one
-            :param Cluster cluster1: first cluster
-            :param Cluster cluster2: second cluster
-            :returns distance between clusters
-            """
-            p = self.p
-            beta = self.beta
-            na, nb = cluster1.power, cluster2.power
-            wa, wb = cluster1.weights, cluster2.weights
-            delta = np.abs(cluster1.centroid - cluster2.centroid)
-            weight_multiplier = ((wa + wb) / 2) ** beta
-            distance = ((na * nb) / (na + nb)) * (sum(weight_multiplier * (delta ** p)))
-            return distance
+        """WardPB distance between this cluster and specified one
+        :param Cluster cluster1: first cluster
+        :param Cluster cluster2: second cluster
+        :returns distance between clusters
+        """
+        p = self.p
+        beta = self.beta
+        na, nb = cluster1.power, cluster2.power
+        wa, wb = cluster1.weights, cluster2.weights
+        delta = np.abs(cluster1.centroid - cluster2.centroid)
+        weight_multiplier = ((wa + wb) / 2) ** beta
+        distance = ((na * nb) / (na + nb)) * (sum(weight_multiplier * (delta ** p)))
+        return distance
 
     @property
     def p(self):
@@ -171,8 +144,6 @@ class AWardPBClusterStructure(AgglomerativeClusterStructure):
             else:
                 new_weights = np.zeros(shape=sh)
                 new_weights[np.argmin(D)] = 1
-        new_cluster = self.Cluster.from_params(self, new_points_indices,
-                                                                  weights=new_weights,
-                                                                  centroid=new_centroid)
+        new_cluster = self.Cluster(self, new_points_indices, centroid=new_centroid, weights=new_weights)
         self.add_cluster(new_cluster)
         return new_cluster
