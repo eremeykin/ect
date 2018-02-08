@@ -39,14 +39,15 @@ def repr_param(param):
         DataPBRes(rp("shared/data/data500ws.pts"), 3, 2, 'matlab'),
         DataPBRes(rp("shared/data/data500ws.pts"), 3, 3, 'matlab'),
         DataPBRes(rp("shared/data/iris.pts"), 3.5, 1, 'matlab'),
-        DataPBRes(rp("shared/data/data500ws.pts"), 3, 1, 'matlab'),  # fails, TODO looks like computational error
+        DataPBRes(rp("shared/data/data500ws.pts"), 3, 1, 'matlab'),  # fails, FIXME looks like computational error
         DataPBRes(rp("shared/data/data500ws.pts"), 2, 1, 'matlab'),  # here was a problem with singleton cluster.
         # in watlab weights are 1 0 0 ... but I had 0.1666 0.1666 0.1666 ...
-        DataPBRes(rp("shared/data/data500ws.pts"), 2.6, 1.1, 'matlab'),  # fails, TODO check whats wrong
+        DataPBRes(rp("shared/data/data500ws.pts"), 2.6, 1.1, 'matlab'),  # fails, FIXME
         DataPBRes(rp("shared/data/random_1000x12_c12.pts"), 2.6, 1.1, 'matlab'),
         DataPBRes(rp("shared/data/data500ws.pts"), 2.0, 1.1, 'matlab'),
         DataPBRes(rp("shared/data/random_1000x12_c12.pts"), 2.0, 1.1, 'matlab'),
-        DataPBRes(rp("shared/data/error_set_2.2_1.2.pts"), 2.2, 1.2, 'matlab'),
+        # the case when there is an empty cluster
+        DataPBRes(rp("shared/data/error_set_2.2_1.2.pts"), 2.2, 1.2, 'matlab'), # fails, FIXME
     ],
     ids=repr_param)
 def data_cs_pb_res(request):

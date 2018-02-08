@@ -26,7 +26,7 @@ class IKMeans:
                 cluster_points[nearest_cluster].append(index)
 
             new_clusters = self._cluster_structure.release_new_batch(
-                [np.array(x) for x in cluster_points.values()])  # TODO think how can I write it better
+                [np.array(x) for x in cluster_points.values() if len(x) > 0])  # TODO think how can I write it better
             # stop condition
             if set(new_clusters) == set(clusters):
                 break
