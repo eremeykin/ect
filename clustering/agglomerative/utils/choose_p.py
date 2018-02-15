@@ -30,11 +30,11 @@ class ChooseP:
             data = cluster_structure.data
             dist_list = list()
             for point_index_j in cluster.points_indices:
-                if point_index_i != point_index_j:
-                    point_i = data[point_index_i]
-                    point_j = data[point_index_j]
-                    dist = self.distance(point_i, point_j)
-                    dist_list.append(dist)
+                # if point_index_i != point_index_j:
+                point_i = data[point_index_i]
+                point_j = data[point_index_j]
+                dist = self.distance(point_i, point_j)
+                dist_list.append(dist)
             return np.average(dist_list)
 
         def _b(self, point_index_i, cluster, cluster_structure):
