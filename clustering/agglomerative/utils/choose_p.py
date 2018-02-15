@@ -10,17 +10,6 @@ from collections import namedtuple
 class ChooseP:
     """The Minkowski central partition as a pointer to the distance exponent and consensus partitioning"""
 
-    class ClusteringCriterion:
-        def __call__(self, cluster_structure):
-            res = 0
-            p = cluster_structure.p
-            for cluster in cluster_structure.clusters:
-                weights = cluster.weights
-                points = cluster.cluster_points
-                centroid = cluster.centroid
-                res += np.sum(weights ** p @ (np.abs(points - centroid) ** p).T)
-            return res
-
     class AvgSilhouetteWidthCriterion:
         @staticmethod
         def distance(point1, point2):
