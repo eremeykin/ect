@@ -1,4 +1,7 @@
 import numpy as np
+import logging
+from time import time
+log = logging.getLogger(__name__)
 
 from clustering.agglomerative.utils.a_ward_cluster_structure import AWardClusterStructure
 
@@ -37,9 +40,12 @@ class APInit:
         return self._cluster_structure.release_new_cluster(points_indices)
 
     def __call__(self):
+        start = time()
+        log.info("starting anomalous pattern initialization")
         current_data = self._data
         current_index = self._index
         while len(current_index) > 0:
+            log.info("current data size: {}".format(len(current_index)))
             # step 2
             tentative_centroid_relative_index = self._furthest_point_relative_index(current_data)
             tentative_centroid_index = current_index[tentative_centroid_relative_index]
@@ -71,6 +77,7 @@ class APInit:
             current_data = current_data[~anomaly]
             current_index = current_index[~anomaly]
         self._completed = True
+        log.info("anomalous pattern initialization completed in {:5.2f} sec.".format(time() - start))
         return self._cluster_structure.current_labels()
 
     class AccessToUnavailableResult(BaseException):

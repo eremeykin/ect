@@ -11,6 +11,7 @@ class DEPDDPClusterStructure(ClusterStructure):
             # 1. normalize cluster points
             mean = np.mean(self._cluster_points, axis=0)
             range_ = np.max(self._cluster_points, axis=0) - np.min(self._cluster_points, axis=0)
+            range_[np.abs(range_) < 1e6] = 1 # replace zeros? TODO confirm
             norm_points = (self._cluster_points - mean) / range_
             # 2. make SVD
             U, s, Vt = np.linalg.svd(norm_points)

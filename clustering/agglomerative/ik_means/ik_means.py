@@ -1,5 +1,8 @@
 import numpy as np
 from clustering.agglomerative.utils.imwk_means_cluster_structure import IMWKMeansClusterStructure
+from time import time
+import logging
+log = logging.getLogger(__name__)
 
 
 class IKMeans:
@@ -17,7 +20,10 @@ class IKMeans:
         return self._cluster_structure
 
     def __call__(self):
+        start = time()
+        log.info("starting ik-means algorithm")
         for loop in range(IKMeans._MAX_LOOPS):
+            log.info("iteration: {:4d}/{:4d}".format(loop, IKMeans._MAX_LOOPS))
             clusters = self._cluster_structure.clusters
             cluster_points = {cluster: [] for cluster in clusters}
 
@@ -33,4 +39,5 @@ class IKMeans:
             self._cluster_structure.clear()
             self._cluster_structure.add_all_clusters(set(new_clusters))
         self._completed = True
+        log.info("ik-means completed in {:5.2f} sec.".format(time()-start))
         return self.cluster_structure.current_labels()

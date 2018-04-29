@@ -1,4 +1,6 @@
 import numpy as np
+import logging
+log = logging.getLogger(__name__)
 
 
 class NearestNeighborChain:
@@ -46,6 +48,7 @@ class NearestNeighborChain:
             if nearest is None:
                 break
             if nearest in stack:
+                log.info("current clusters number: {:4d}".format(self._cs.clusters_number))
                 merged = self._cs.merge(top, nearest)
                 self._merge_array.append([top, nearest, merged, dist])
                 stack.remove(top)

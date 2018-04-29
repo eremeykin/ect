@@ -1,5 +1,7 @@
+import logging
+log = logging.getLogger(__name__)
 import numpy as np
-
+from time import time
 
 class AWardPB:
     def __init__(self, cluster_structure, k_star=None):
@@ -30,7 +32,10 @@ class AWardPB:
         return self._cluster_structure
 
     def __call__(self):
+        start =time()
+        log.info("starting A-Ward p beta")
         while self._cluster_structure.clusters_number > self._k_star:
+            log.info("current clusters number: {:4d}".format(self._cluster_structure.clusters_number))
             clusters = list(self._cluster_structure.clusters)
             i, j = self._nearest(clusters)
             assert i != j
@@ -38,4 +43,5 @@ class AWardPB:
             c2 = clusters[j]
             self._cluster_structure.merge(c1, c2)
         self._completed = True
+        log.info("A-Ward p beta completed in {:5.2f} sec.".format(time() - start))
         return self._cluster_structure.current_labels()

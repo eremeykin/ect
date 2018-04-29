@@ -9,6 +9,7 @@ class BiKMeansRClusterStructure(ClusterStructure):
     class Cluster(ClusterStructure.Cluster):
         def __init__(self, cluster_structure, points_indices):
             super().__init__(cluster_structure, points_indices)
+            self._centroid = None
 
         def gen_directions(self, directions_num, mean, cov):
             directions = []
@@ -17,6 +18,12 @@ class BiKMeansRClusterStructure(ClusterStructure):
                 new_direction = Direction(self._cluster_points, vector)
                 directions.append(new_direction)
             return directions
+
+        @property
+        def centroid(self):
+            if self._centroid is None:
+                self._centroid = np.mean(self._cluster_points, axis=0)
+            return self._centroid
 
     def __init__(self, data, epsilon, directions_num=None, second_chance=False, split_by='ik_means'):
         """split_by = ik_means or max_eps"""
@@ -53,6 +60,7 @@ class BiKMeansRClusterStructure(ClusterStructure):
         # normalize data
         mean = np.mean(data, axis=0)
         range_ = np.max(data, axis=0) - np.min(data, axis=0)
+        range_[np.abs(range_) < 1e6] = 1  # replace zeros? TODO confirm
         norm_data = (data - mean) / range_
         # run anomalous pattern init
         run_ap_init = APInit(norm_data)

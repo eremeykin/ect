@@ -1,6 +1,9 @@
 # from clustering.divisive.utils.depddp_cluster_strucutre_old import DEPDDPClusterStructure
 from clustering.divisive.utils.depddp_cluster_strucutre import DEPDDPClusterStructure
 import numpy as np
+import logging
+from time import time
+log = logging.getLogger(__name__)
 
 
 class DEPDDP:
@@ -21,10 +24,14 @@ class DEPDDP:
         return self._cluster_structure
 
     def __call__(self):
+        start = time()
+        log.info("starting dePDDP algorithm")
         while True:
+            log.info("current clusters number: {:4d}".format(self._cluster_structure.clusters_number))
             best_cluster = self._cluster_structure.find_best_cluster()
             if best_cluster is None:
                 break
             self._cluster_structure.split(best_cluster)
         self._completed = True
+        log.info("dePDDP completed in {:5.2f} sec.".format(time() - start))
         return self._cluster_structure.current_labels()

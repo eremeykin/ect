@@ -1,7 +1,9 @@
 import numpy as np
 from clustering.agglomerative.utils.a_ward_cluster_structure import AWardClusterStructure
 from clustering.agglomerative.utils.nearest_neighbor import NearestNeighborChain
-
+from time import time
+import logging
+log = logging.getLogger(__name__)
 
 class AWard:
     """ Implements AWard clustering algorithm."""
@@ -40,6 +42,8 @@ class AWard:
         Changes cluster structure, passed to constructor.
 
         :returns the resulting cluster structure."""
+        start = time()
+        log.info("starting A-Ward algorithm")
         clusters = set(self._cluster_structure.clusters)
         run_nnc = NearestNeighborChain(self._cluster_structure)
         merge_array = run_nnc()
@@ -52,4 +56,5 @@ class AWard:
         self._cluster_structure.clear()
         self._cluster_structure.add_all_clusters(clusters)
         self._completed = True
+        log.info("A-Ward completed in {:5.2f} sec.".format(time()-start))
         return self._cluster_structure.current_labels()
