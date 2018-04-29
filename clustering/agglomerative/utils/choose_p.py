@@ -5,6 +5,9 @@ from clustering.agglomerative.a_ward_pb import AWardPB
 import numpy as np
 from sklearn.metrics import adjusted_rand_score as ari
 from collections import namedtuple
+import logging
+from time import time
+log = logging.getLogger(__name__)
 
 
 class ChooseP:
@@ -43,12 +46,15 @@ class ChooseP:
         def __call__(self, cluster_structure):
             data = cluster_structure.data
             sw_list = list()
+            p = 0
             for cluster in cluster_structure.clusters:
                 for point_index in cluster.points_indices:
                     a = self._a(point_index, cluster, cluster_structure)
                     b = self._b(point_index, cluster, cluster_structure)
                     sw = (b - a) / max(b, a)
                     sw_list.append(sw)
+                    p+=1
+                    log.info("calculating for point: {}/{}".format(p,len(data)))
             return np.average(sw_list)
 
     def __init__(self, data, k_star, p_range, beta_range):
