@@ -22,6 +22,12 @@ class DEPDDPClusterStructure(ClusterStructure):
             self._points_indices = self._points_indices[reordering]
             self._cluster_points = self._cluster_points[reordering]
 
+        @property
+        def centroid(self):
+            if self._centroid is None:
+                self._centroid = np.mean(self._cluster_points, axis=0)
+            return self._centroid
+
     def find_best_cluster(self):
         try:
             return min([c for c in self._clusters if c.first_pa_direction.deepest_min_value is not None],
